@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Agentation } from "agentation";
 import { LogoMark } from "../sections/LogoMark";
 import { apiFetch } from "../lib/api";
 import { ActivityCalendar } from "../components/ActivityCalendar/ActivityCalendar";
@@ -256,7 +257,7 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {history && history.length > 0 && (
+        {history && (
           <section>
             <h2 className="dashboard-section-title">Activity</h2>
             <ActivityCalendar history={history} />
@@ -271,6 +272,8 @@ export default function DashboardPage() {
           />
         </section>
       </div>
+
+      {import.meta.env.DEV && <Agentation endpoint="http://localhost:4747" />}
     </div>
   );
 }
