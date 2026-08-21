@@ -1,0 +1,122 @@
+.problem-tagline {
+  max-width: 900px;
+  margin-bottom: var(--section-gap);
+}
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.problem-code {
+  overflow: hidden;
+}
+
+.problem-code-body {
+  margin: 0;
+  padding: 18px 0;
+  overflow-x: auto;
+}
+
+.problem-code-line {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: center;
+  padding: 3px 18px 3px 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.65;
+}
+
+.problem-code-num {
+  color: rgba(255, 255, 255, 0.28);
+  text-align: right;
+  padding-right: 14px;
+  user-select: none;
+}
+
+.problem-code-line.is-flagged {
+  background: var(--accent-wash);
+}
+
+.problem-code-line.is-flagged .problem-code-text {
+  color: #f2f2f2;
+}
+
+.problem-code-marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+}
+
+.problem-code-marker.marker-dependency { background: var(--accent); }
+.problem-code-marker.marker-impact { background: var(--risk-mid); }
+.problem-code-marker.marker-history { background: #8ea6ff; }
+.problem-code-marker.marker-context { background: var(--risk-high); }
+
+.problem-annotations {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.problem-annotation {
+  padding: 14px 18px;
+}
+
+.problem-annotation + .problem-annotation {
+  border-top: 1px solid var(--panel-border);
+}
+
+.problem-annotation-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.problem-annotation-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.marker-dependency .problem-annotation-dot { background: var(--accent); }
+.marker-impact .problem-annotation-dot { background: var(--risk-mid); }
+.marker-history .problem-annotation-dot { background: #8ea6ff; }
+.marker-context .problem-annotation-dot { background: var(--risk-high); }
+
+.problem-annotation-label {
+  flex: 1;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.problem-annotation-line {
+  color: rgba(255, 255, 255, 0.34);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.problem-annotation-detail {
+  margin-top: 6px;
+  padding-left: 15px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .problem-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,19 @@
+.thinking-shimmer {
+  display: inline-flex;
+}
+
+.thinking-shimmer-char {
+  display: inline-block;
+  white-space: pre;
+  animation: thinking-shimmer-wave 1.5s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.1s);
+}
+
+@keyframes thinking-shimmer-wave {
+  0%, 100% { opacity: 0.35; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking-shimmer-char { animation: none; opacity: 1; }
+}

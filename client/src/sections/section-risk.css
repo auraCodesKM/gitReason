@@ -1,0 +1,156 @@
+.risk-panel {
+  position: relative;
+  overflow: hidden;
+  padding: 8px 8px 0;
+}
+
+.risk-bg {
+  position: absolute;
+  inset: -10% -5%;
+  z-index: 0;
+  background: radial-gradient(55% 45% at 80% 20%, rgba(216, 101, 74, 0.06), transparent 70%);
+  pointer-events: none;
+}
+
+.risk-svg {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.risk-edge {
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 1.4;
+}
+
+.risk-edge.is-outer {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-dasharray: 2 4;
+}
+
+.risk-node {
+  cursor: pointer;
+  outline: none;
+}
+
+.risk-dot {
+  transition: r 0.25s var(--ease), filter 0.25s ease;
+}
+
+.risk-dot-root {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 10px var(--accent-dim));
+}
+
+.risk-dot-low { fill: #0a0a0a; stroke: var(--risk-low); stroke-width: 1.8; }
+.risk-dot-mid { fill: #0a0a0a; stroke: var(--risk-mid); stroke-width: 1.8; }
+.risk-dot-high { fill: #0a0a0a; stroke: var(--risk-high); stroke-width: 1.8; }
+
+.risk-node.is-hovered .risk-dot-low { fill: var(--risk-low); }
+.risk-node.is-hovered .risk-dot-mid { fill: var(--risk-mid); }
+.risk-node.is-hovered .risk-dot-high { fill: var(--risk-high); }
+
+.risk-label {
+  fill: rgba(255, 255, 255, 0.6);
+  font-family: var(--mono-code);
+  font-size: 10.5px;
+  transition: fill 0.25s ease;
+}
+
+.risk-node.is-hovered .risk-label {
+  fill: #fff;
+}
+
+.risk-label.is-root-label {
+  fill: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.risk-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 18px 24px 22px;
+  border-top: 1px solid var(--panel-border);
+  min-height: 24px;
+}
+
+.risk-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.risk-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.risk-legend-item i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.risk-legend-item .risk-dot-low { background: var(--risk-low); }
+.risk-legend-item .risk-dot-mid { background: var(--risk-mid); }
+.risk-legend-item .risk-dot-high { background: var(--risk-high); }
+
+.risk-summary {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+  font-family: var(--mono);
+}
+
+.risk-info {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  max-width: 420px;
+}
+
+.risk-info p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.risk-info-tag {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.risk-tag-low { color: var(--risk-low); background: rgba(86, 211, 100, 0.12); }
+.risk-tag-mid { color: var(--risk-mid); background: rgba(216, 179, 74, 0.12); }
+.risk-tag-high { color: var(--risk-high); background: rgba(216, 101, 74, 0.14); }
+
+.risk-info-hint {
+  color: rgba(255, 255, 255, 0.32) !important;
+}
+
+@media (max-width: 900px) {
+  .risk-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .risk-label {
+    font-size: 9px;
+  }
+}

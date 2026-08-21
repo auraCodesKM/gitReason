@@ -1,0 +1,24 @@
+.section-doodle {
+  position: relative;
+  z-index: 1;
+  background: #000000;
+  display: flex;
+  padding: 30px 0;
+}
+
+.section-doodle-line {
+  width: 100%;
+  --drawably-stroke: var(--accent);
+  --drawably-fill: var(--accent);
+  --drawably-width: 4.2;
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  .section-doodle {
+    padding: 22px 0;
+  }
+  .section-doodle-line {
+    --drawably-width: 3.4;
+  }
+}

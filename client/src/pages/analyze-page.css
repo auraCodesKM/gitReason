@@ -1,0 +1,350 @@
+.analyze-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: #000000;
+  color: #f2f2f2;
+}
+
+.analyze-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+  flex-shrink: 0;
+}
+
+.analyze-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.analyze-repo-name {
+  font-family: var(--mono-code, ui-monospace, monospace);
+  font-size: 13px;
+  color: var(--muted, #9a9a9a);
+}
+
+.analyze-dashboard-link {
+  margin-left: auto;
+  color: var(--muted, #9a9a9a);
+  font-size: 13.5px;
+  text-decoration: none;
+}
+
+.analyze-dashboard-link:hover { color: #fff; }
+
+.analyze-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex: 1;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.analyze-phases {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.analyze-phase {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #55585c;
+  transition: color 0.3s ease;
+}
+
+.analyze-phase-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3a3a3a;
+  flex-shrink: 0;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.analyze-phase.is-done { color: #9a9a9a; }
+.analyze-phase.is-done .analyze-phase-dot { background: var(--accent, #56d364); }
+
+.analyze-phase.is-active {
+  color: #fff;
+  animation: analyze-pulse 1.4s ease-in-out infinite;
+}
+.analyze-phase.is-active .analyze-phase-dot {
+  background: var(--accent, #56d364);
+  box-shadow: 0 0 10px var(--accent, #56d364);
+}
+
+@keyframes analyze-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.analyze-body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  flex: 1;
+  min-height: 0;
+}
+
+.analyze-body:has(.analyze-preview) {
+  grid-template-columns: 240px 1fr 380px;
+}
+
+.analyze-tree {
+  border-right: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+  overflow-y: auto;
+  padding: 12px 8px;
+  font-size: 13px;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 5px 8px;
+  padding-left: calc(8px + var(--depth, 0) * 14px);
+  border: 0;
+  background: none;
+  color: #c9c9c9;
+  font-family: var(--mono-code, ui-monospace, monospace);
+  font-size: 12.5px;
+  text-align: left;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tree-row:hover { background: var(--panel-bg-raised, #111111); color: #fff; }
+
+.tree-file-row.is-selected {
+  background: var(--accent-wash, rgba(86, 211, 100, 0.1));
+  color: var(--accent, #56d364);
+}
+
+.tree-caret {
+  display: inline-block;
+  transition: transform 0.15s ease;
+  color: #6a6a6a;
+}
+.tree-caret.is-open { transform: rotate(90deg); }
+
+.analyze-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: auto;
+  padding: 20px 24px;
+}
+
+.analyze-explanation {
+  margin: 0 0 24px;
+  max-width: 780px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #c9c9c9;
+}
+
+.analyze-explanation p { margin: 0 0 12px; }
+.analyze-explanation p:last-child { margin-bottom: 0; }
+
+.analyze-explanation h1,
+.analyze-explanation h2,
+.analyze-explanation h3 {
+  margin: 20px 0 10px;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.analyze-explanation h1:first-child,
+.analyze-explanation h2:first-child,
+.analyze-explanation h3:first-child { margin-top: 0; }
+.analyze-explanation h1 { font-size: 19px; }
+.analyze-explanation h2 { font-size: 16.5px; }
+.analyze-explanation h3 { font-size: 14.5px; }
+
+.analyze-explanation strong { color: #f2f2f2; font-weight: 600; }
+
+.analyze-explanation ul,
+.analyze-explanation ol {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+.analyze-explanation li { margin-bottom: 4px; }
+
+.analyze-explanation code {
+  font-family: var(--mono-code, ui-monospace, monospace);
+  font-size: 12.5px;
+  color: var(--accent, #56d364);
+  background: var(--panel-bg-raised, #111111);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.analyze-explanation a {
+  color: var(--accent, #56d364);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.analyze-diagram {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.analyze-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* progressive "drawing" reveal — see staggerReveal() in AnalyzePage.jsx.
+   Opacity-only: Mermaid positions nodes/clusters via a native SVG
+   transform="translate(x,y)" attribute, and a CSS `transform` on the same
+   element replaces that attribute outright rather than composing with it —
+   animating scale/translate via CSS collapses every node to the same spot.
+   Opacity never touches positioning, so it's the only safe property here. */
+.diagram-reveal {
+  opacity: 0;
+  animation-name: diagram-reveal-fade;
+  animation-duration: 0.4s;
+  animation-timing-function: ease;
+  animation-fill-mode: both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+.diagram-reveal-cluster { animation-duration: 0.5s; }
+
+@keyframes diagram-reveal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diagram-reveal { animation: none; opacity: 1; }
+}
+
+.analyze-diagram-fallback {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 520px;
+}
+
+.analyze-diagram-fallback li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+  background: var(--panel-bg, #0a0a0a);
+}
+
+.analyze-diagram-fallback button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #f2f2f2;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+}
+.analyze-diagram-fallback button:hover { color: var(--accent, #56d364); }
+
+.analyze-diagram-fallback-path {
+  font-family: var(--mono-code, ui-monospace, monospace);
+  font-size: 11.5px;
+  color: var(--muted, #9a9a9a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analyze-diagram [id^="flowchart-"] {
+  cursor: pointer;
+}
+
+.analyze-preview {
+  border-left: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.analyze-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+  font-family: var(--mono-code, ui-monospace, monospace);
+  font-size: 12.5px;
+  color: #c9c9c9;
+  flex-shrink: 0;
+}
+
+.analyze-preview-close {
+  border: 0;
+  background: none;
+  color: var(--muted, #9a9a9a);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.analyze-preview-close:hover { color: #fff; }
+
+.analyze-preview-body {
+  flex: 1;
+  overflow: auto;
+  font-size: 12.5px;
+}
+
+.analyze-preview-body pre {
+  margin: 0;
+  padding: 14px;
+}
+
+.file-preview-empty {
+  padding: 16px;
+  color: var(--muted, #9a9a9a);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .analyze-body,
+  .analyze-body:has(.analyze-preview) {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  .analyze-tree {
+    border-right: 0;
+    border-bottom: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+    max-height: 200px;
+  }
+  .analyze-preview {
+    border-left: 0;
+    border-top: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+    max-height: 50vh;
+  }
+}

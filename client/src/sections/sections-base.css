@@ -1,0 +1,246 @@
+/* ============ shared section tokens ============ */
+
+:root {
+  --section-y: 128px;
+  --section-y-sm: 80px;
+  --section-max: 1180px;
+  --section-gap: 64px;
+  --panel-bg: #0a0a0a;
+  --panel-bg-raised: #111111;
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --panel-border-strong: rgba(255, 255, 255, 0.18);
+  --accent: #56d364;
+  --accent-dim: rgba(86, 211, 100, 0.55);
+  --accent-wash: rgba(86, 211, 100, 0.08);
+  --risk-low: #56d364;
+  --risk-mid: #d8b34a;
+  --risk-high: #d8654a;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --mono: "Kalam", cursive, "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --mono-code: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", Menlo, Consolas, monospace;
+
+  --syntax-keyword: #7aa6e8;
+  --syntax-string: #d99a6c;
+  --syntax-comment: #6b7280;
+  --syntax-fn: #d7ba7d;
+  --syntax-number: #9cc98b;
+  --syntax-property: #79c7d6;
+  --syntax-punct: rgba(255, 255, 255, 0.42);
+  --syntax-text: rgba(255, 255, 255, 0.82);
+}
+
+/* ============ drawably ============ */
+
+.drawn-btn {
+  height: 46px;
+  padding: 0 26px;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  --drawably-stroke: var(--accent);
+  --drawably-fill: var(--accent);
+}
+
+.drawn-divider {
+  --drawably-stroke: var(--panel-border-strong);
+  --drawably-fill: var(--panel-border-strong);
+  --drawably-width: 1.5;
+  margin: 0;
+}
+
+/* ============ section shell ============ */
+
+.section {
+  position: relative;
+  z-index: 1;
+  background: #000000;
+  padding: var(--section-y) var(--stats-x, 72px);
+}
+
+.section-inner {
+  max-width: var(--section-max);
+  margin: 0 auto;
+}
+
+.section-head {
+  max-width: 640px;
+  margin-bottom: var(--section-gap);
+}
+
+.section-head.is-centered {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.section-title {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 500;
+  font-size: clamp(28px, 3.4vw, 44px);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: #fff;
+  text-wrap: balance;
+}
+
+.section-title em {
+  font-family: var(--mono);
+  font-style: normal;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.section-lede {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+/* ============ reveal-on-scroll ============ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  filter: blur(6px);
+  transition: opacity 0.85s var(--ease), transform 0.85s var(--ease), filter 0.85s var(--ease);
+}
+
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  transition-delay: var(--stagger-delay, 0s);
+}
+
+.reveal-stagger.is-in > * {
+  opacity: 1;
+  transform: none;
+}
+
+/* ============ word reveal (tagline moment) ============ */
+
+.word-reveal {
+  display: flex;
+  flex-wrap: wrap;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 500;
+  font-size: clamp(30px, 4.6vw, 58px);
+  letter-spacing: -0.035em;
+  line-height: 1.18;
+}
+
+.word-reveal-word {
+  color: rgba(255, 255, 255, 0.28);
+  transition: color 0.7s var(--ease);
+  transition-delay: var(--w-delay, 0s);
+  white-space: pre;
+}
+
+.word-reveal.is-in .word-reveal-word {
+  color: #fff;
+}
+
+.word-reveal.is-in .word-reveal-word.is-accent {
+  color: var(--accent);
+}
+
+/* ============ shared panel chrome ============ */
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.panel-chrome {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.panel-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.panel-chrome-label {
+  margin-left: 6px;
+  color: var(--muted);
+  font-family: var(--mono-code);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+}
+
+.panel-parallax {
+  will-change: transform;
+}
+
+/* ============ code text ============ */
+
+.tok-keyword { color: var(--syntax-keyword); }
+.tok-string { color: var(--syntax-string); }
+.tok-comment { color: var(--syntax-comment); font-style: italic; }
+.tok-fn { color: var(--syntax-fn); }
+.tok-number { color: var(--syntax-number); }
+.tok-property { color: var(--syntax-property); }
+.tok-punct { color: var(--syntax-punct); }
+.tok-plain { color: var(--syntax-text); }
+
+.code-text {
+  font-family: var(--mono-code);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-stagger > *,
+  .word-reveal-word,
+  .panel-parallax {
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+  .word-reveal-word {
+    color: #fff !important;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --section-y: var(--section-y-sm);
+    --section-gap: 40px;
+  }
+  .section {
+    padding-left: var(--stats-x, 20px);
+    padding-right: var(--stats-x, 20px);
+  }
+}
+
+@media (max-width: 560px) {
+  .section-title {
+    font-size: clamp(26px, 7vw, 34px);
+  }
+  .word-reveal {
+    font-size: clamp(26px, 7.5vw, 38px);
+  }
+}

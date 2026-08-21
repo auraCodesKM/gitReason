@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# secrets — never commit real env values, only .env.example
+.env
+.env.local
+
+# local SQLite data (sessions, analysis history)
+server/data/
+client/.playwright-cli/
