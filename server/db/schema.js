@@ -41,6 +41,11 @@ export const MIGRATIONS = [
   // — lets a signed-in user use their own quota instead of the shared
   // server key. NULL means "use the server's GEMINI_API_KEY".
   `ALTER TABLE users ADD COLUMN gemini_key_enc TEXT`,
+  // GitHub's own repo.language, already fetched by fetchRepo() during
+  // analysis but never persisted — the dashboard's codebase list needs it
+  // to avoid inventing one. NULL for rows analyzed before this existed, or
+  // for repos GitHub itself reports no primary language for.
+  `ALTER TABLE analyses ADD COLUMN language TEXT`,
 ];
 
 export function isDuplicateColumnError(err) {

@@ -214,6 +214,7 @@ export async function handleAnalyzeStream(req, res) {
         fileTree: filteredTree,
         explanation,
         graph,
+        language: repoResult.repo.language,
       });
     }
 

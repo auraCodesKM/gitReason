@@ -12,19 +12,20 @@ function parseAnalysisRow(row) {
     explanation: row.explanation,
     graph: row.graph_json ? JSON.parse(row.graph_json) : null,
     errorMessage: row.error_message,
+    language: row.language ?? null,
     createdAt: row.created_at,
   };
 }
 
 export const analysesRepo = {
-  async create({ userId, repoFullName, status, fileTree, explanation = null, graph = null, errorMessage = null }) {
+  async create({ userId, repoFullName, status, fileTree, explanation = null, graph = null, errorMessage = null, language = null }) {
     const id = crypto.randomBytes(16).toString("hex");
     await db
       .prepare(
-        `INSERT INTO analyses (id, user_id, repo_full_name, status, file_tree_json, explanation, graph_json, error_message, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO analyses (id, user_id, repo_full_name, status, file_tree_json, explanation, graph_json, error_message, created_at, language)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
-      .run(id, userId, repoFullName, status, JSON.stringify(fileTree), explanation, graph ? JSON.stringify(graph) : null, errorMessage, Date.now());
+      .run(id, userId, repoFullName, status, JSON.stringify(fileTree), explanation, graph ? JSON.stringify(graph) : null, errorMessage, Date.now(), language);
     return id;
   },
 
@@ -39,7 +40,7 @@ export const analysesRepo = {
     // one malformed/incomplete (e.g. failed) analysis can't break the list.
     const rows = await db
       .prepare(
-        `SELECT id, repo_full_name, status, created_at, file_tree_json, graph_json
+        `SELECT id, repo_full_name, status, created_at, file_tree_json, graph_json, language
          FROM analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`
       )
       .all(userId, limit);
@@ -57,7 +58,10 @@ export const analysesRepo = {
       } catch {
         // leave counts null — a malformed row shouldn't break the list
       }
-      return { id: r.id, repoFullName: r.repo_full_name, status: r.status, createdAt: r.created_at, fileCount, nodeCount, edgeCount };
+      return {
+        id: r.id, repoFullName: r.repo_full_name, status: r.status, createdAt: r.created_at,
+        fileCount, nodeCount, edgeCount, language: r.language ?? null,
+      };
     });
   },
 
