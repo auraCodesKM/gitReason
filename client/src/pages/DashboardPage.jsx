@@ -97,6 +97,15 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Landed here straight from a direct "Sign in with GitHub" (no repo
+    // picked yet) — clean the query string the same way App.jsx does for
+    // the repo-scoped success redirect.
+    if (new URLSearchParams(window.location.search).get("auth") === "success") {
+      window.history.replaceState({}, "", "/dashboard");
+    }
+  }, []);
+
+  useEffect(() => {
     apiFetch("/api/user/me")
       .then((res) => res.json())
       .then((data) => {

@@ -46,13 +46,17 @@ export default function SignPage() {
   }, []);
 
   const trimmed = repoValue.trim();
-  const canContinue = isValidRepoPath(trimmed);
+  // A repo is optional — leaving it blank just signs in and lands on the
+  // dashboard. Typing something disables the button until it's a real
+  // owner/repo, so a half-typed value can't be submitted by mistake.
+  const canContinue = trimmed === "" || isValidRepoPath(trimmed);
 
   function handleContinue(e) {
     e.preventDefault();
     if (!canContinue) return;
     setPending(true);
-    window.location.href = apiUrl(`/api/auth/github/start?repo=${encodeURIComponent(trimmed)}`);
+    const query = trimmed ? `?repo=${encodeURIComponent(trimmed)}` : "";
+    window.location.href = apiUrl(`/api/auth/github/start${query}`);
   }
 
   return (
@@ -69,12 +73,12 @@ export default function SignPage() {
         <form className="sign-content" onSubmit={handleContinue}>
           <h1>Connect GitHub</h1>
           <p className="sign-copy">
-            GitReason needs access to private repositories to understand what you&rsquo;re
-            changing.
+            Sign in to analyze private repositories and save your history. A repository
+            is optional here — add one now or just sign in and pick one from your dashboard.
           </p>
 
           <label className="sign-field" htmlFor="sign-repo">
-            <span className="sign-field-label">Repository</span>
+            <span className="sign-field-label">Repository (optional)</span>
             <div className="sign-field-input">
               <span className="sign-field-prefix">github.com/</span>
               <input

@@ -63,15 +63,23 @@ export function handleAuthStart(req, res) {
   const env = requireGithubEnv(res);
   if (!env) return;
 
-  const parsed = parseRepoPath(req.query.repo);
-  if (!parsed) {
-    return res.status(400).json({ status: "invalid" });
+  // repo is optional — a direct "Sign in with GitHub" (no repo picked yet)
+  // just authenticates and lands on /dashboard. When present it must still
+  // be a valid owner/repo, so a malformed query string fails loudly rather
+  // than silently signing in for the wrong reason.
+  let repoFullName = null;
+  if (req.query.repo) {
+    const parsed = parseRepoPath(req.query.repo);
+    if (!parsed) {
+      return res.status(400).json({ status: "invalid" });
+    }
+    repoFullName = parsed.fullName;
   }
 
   prune(pendingStates, STATE_TTL_MS);
 
   const state = crypto.randomBytes(24).toString("hex");
-  pendingStates.set(state, { repo: parsed.fullName, createdAt: Date.now() });
+  pendingStates.set(state, { repo: repoFullName, createdAt: Date.now() });
 
   const authorizeUrl = new URL("https://github.com/login/oauth/authorize");
   authorizeUrl.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
@@ -125,20 +133,20 @@ export async function handleAuthCallback(req, res) {
     return signError("token_exchange_failed", pending.repo);
   }
 
-  const [owner, repo] = pending.repo.split("/");
-
-  let result;
+  // Only check repo access when the user actually came here to analyze a
+  // specific one — a plain sign-in has nothing to check access to yet.
   let githubUser;
   try {
-    result = await fetchRepo(owner, repo, token);
+    if (pending.repo) {
+      const [owner, repo] = pending.repo.split("/");
+      const result = await fetchRepo(owner, repo, token);
+      if (!result.found) return signError("not_found", pending.repo);
+    }
     githubUser = await fetchGitHubUser(token);
   } catch (err) {
     return signError("github_unreachable", pending.repo);
   }
 
-  if (!result.found) {
-    return signError("not_found", pending.repo);
-  }
   if (!githubUser) {
     return signError("github_unreachable", pending.repo);
   }
@@ -147,7 +155,8 @@ export async function handleAuthCallback(req, res) {
   const sessionId = await sessionsRepo.create({ userId: user.id, token, ttlMs: SESSION_TTL_MS });
   setSessionCookie(res, sessionId);
 
-  res.redirect(`${origin}/?auth=success&repo=${encodeURIComponent(pending.repo)}`);
+  const dest = pending.repo ? `/?auth=success&repo=${encodeURIComponent(pending.repo)}` : "/dashboard?auth=success";
+  res.redirect(`${origin}${dest}`);
 }
 
 export async function handleAuthSession(req, res) {
