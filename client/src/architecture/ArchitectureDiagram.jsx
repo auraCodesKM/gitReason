@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Maximize2, Minimize2 } from "lucide-react";
 import mermaid from "mermaid";
 import { graphToMermaid } from "../lib/graphToMermaid";
 
@@ -37,9 +38,11 @@ function revealDiagram(container) {
 }
 
 export default function ArchitectureDiagram({ graph, onOpenFile }) {
-  const containerRef = useRef(null);
+  const wrapRef = useRef(null);
+  const diagramRef = useRef(null);
   const idMapRef = useRef(new Map());
   const [failed, setFailed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,9 +54,9 @@ export default function ArchitectureDiagram({ graph, onOpenFile }) {
     mermaid
       .render(`arch-diagram-${renderCount++}`, definition)
       .then(({ svg }) => {
-        if (cancelled || !containerRef.current) return;
-        containerRef.current.innerHTML = svg;
-        revealDiagram(containerRef.current);
+        if (cancelled || !diagramRef.current) return;
+        diagramRef.current.innerHTML = svg;
+        revealDiagram(diagramRef.current);
       })
       .catch((err) => {
         console.error("Mermaid render failed:", err);
@@ -64,6 +67,22 @@ export default function ArchitectureDiagram({ graph, onOpenFile }) {
       cancelled = true;
     };
   }, [graph]);
+
+  useEffect(() => {
+    function onFullscreenChange() {
+      setIsFullscreen(document.fullscreenElement === wrapRef.current);
+    }
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      wrapRef.current?.requestFullscreen?.();
+    }
+  }
 
   function handleClick(e) {
     const el = e.target.closest('[id^="flowchart-"]');
@@ -87,5 +106,18 @@ export default function ArchitectureDiagram({ graph, onOpenFile }) {
     );
   }
 
-  return <div className="analyze-diagram" ref={containerRef} onClick={handleClick} />;
+  return (
+    <div className="analyze-diagram-wrap" ref={wrapRef}>
+      <button
+        type="button"
+        className="analyze-diagram-fullscreen-btn"
+        onClick={toggleFullscreen}
+        aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+        title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+      >
+        {isFullscreen ? <Minimize2 size={15} strokeWidth={2} /> : <Maximize2 size={15} strokeWidth={2} />}
+      </button>
+      <div className="analyze-diagram" ref={diagramRef} onClick={handleClick} />
+    </div>
+  );
 }

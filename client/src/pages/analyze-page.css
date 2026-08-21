@@ -233,6 +233,46 @@
   text-underline-offset: 2px;
 }
 
+.analyze-diagram-wrap { position: relative; }
+
+.analyze-diagram-fullscreen-btn {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--panel-border-strong, rgba(255, 255, 255, 0.14));
+  background: var(--panel-bg-raised, #111111);
+  color: var(--muted, #9a9a9a);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.analyze-diagram-fullscreen-btn:hover {
+  color: #fff;
+  border-color: var(--accent, #56d364);
+}
+
+/* No flex centering here on purpose - a flex item with no definite width
+   and an svg child sized via max-width:100% creates a circular sizing
+   dependency (item shrinks to content, content wants 100% of item), which
+   collapses both to zero. A plain block with a definite width sidesteps
+   it entirely, the same way the non-fullscreen case already works. */
+.analyze-diagram-wrap:fullscreen {
+  padding: 32px;
+  background: #000;
+  overflow: auto;
+}
+.analyze-diagram-wrap:fullscreen .analyze-diagram {
+  width: 100%;
+  min-height: calc(100% - 64px);
+  border-color: transparent;
+}
+
 .analyze-diagram {
   margin-top: 8px;
   padding: 20px;
