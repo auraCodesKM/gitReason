@@ -9,9 +9,12 @@
   overflow: hidden;
   cursor: pointer;
   background: var(--panel-bg-raised, #111111);
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.account-menu-trigger:hover { border-color: var(--accent, #56d364); }
+.account-menu-trigger:hover {
+  border-color: var(--accent, #56d364);
+  box-shadow: 0 0 0 3px rgba(86, 211, 100, 0.12);
+}
 .account-menu-trigger img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .account-menu-fallback {
   display: flex;

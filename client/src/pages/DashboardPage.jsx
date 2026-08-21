@@ -115,6 +115,7 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard-page">
+      <div className="grain" />
       <DashboardShell
         sidebar={
           <Sidebar mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} hasContent={hasCodebases} />
@@ -124,13 +125,16 @@ export default function DashboardPage() {
         }
       >
         {!hasCodebases ? (
-          <div className="dashboard-onboarding">
-            <h2>Welcome to GitReason</h2>
-            <p>
-              Connect your first repository and GitReason will build an understandable map of its
-              architecture, dependencies and code.
-            </p>
-            <AnalyzeRepoButton label="Analyze repository" />
+          <div className="dashboard-onboarding-grid">
+            <div className="dashboard-onboarding">
+              <h2>Welcome to GitReason</h2>
+              <p>
+                Connect your first repository and GitReason will build an understandable map of its
+                architecture, dependencies and code.
+              </p>
+              <AnalyzeRepoButton label="Analyze repository" />
+            </div>
+            <GithubActivity activity={activity} />
           </div>
         ) : (
           <>

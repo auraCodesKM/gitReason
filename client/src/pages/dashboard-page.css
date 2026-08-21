@@ -39,7 +39,12 @@
   border-radius: 10px;
   border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.08));
   background: var(--panel-bg, #0a0a0a);
-  animation: panel-in 0.35s ease both;
+  animation: panel-in 0.4s var(--ease, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.dashboard-panel:hover {
+  border-color: var(--panel-border-strong, rgba(255, 255, 255, 0.16));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 @keyframes panel-in {
@@ -94,15 +99,34 @@
 
 /* ---------- onboarding (zero-codebase empty state) ---------- */
 
-.dashboard-onboarding {
-  max-width: 440px;
+.dashboard-onboarding-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 16px;
+  align-items: center;
   margin-top: 48px;
-  padding: 0 32px;
+}
+
+.dashboard-onboarding {
+  position: relative;
+  max-width: 420px;
+}
+.dashboard-onboarding::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  left: -60px;
+  width: 340px;
+  height: 260px;
+  background: radial-gradient(ellipse 60% 60% at 30% 30%, rgba(86, 211, 100, 0.09), transparent 72%);
+  pointer-events: none;
+  z-index: -1;
 }
 .dashboard-onboarding h2 {
   margin: 0 0 8px;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: #fff;
 }
 .dashboard-onboarding p {
@@ -114,9 +138,9 @@
 
 @media (max-width: 900px) {
   .dashboard-main-content { padding: 0 20px 48px; }
-  .dashboard-onboarding { padding: 0 20px; }
 }
 
 @media (max-width: 860px) {
   .dashboard-grid-2 { grid-template-columns: 1fr; }
+  .dashboard-onboarding-grid { grid-template-columns: 1fr; }
 }

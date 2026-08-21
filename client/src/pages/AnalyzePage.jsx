@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Agentation } from "agentation";
 import { LogoMark } from "../sections/LogoMark";
 import { ThinkingShimmer } from "../sections/ThinkingShimmer";
 import ArchitectureView from "../architecture/ArchitectureView";
@@ -179,6 +180,8 @@ export default function AnalyzePage() {
           )}
         </div>
       )}
+
+      {import.meta.env.DEV && <Agentation endpoint="http://localhost:4747" />}
     </div>
   );
 }

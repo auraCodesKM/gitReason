@@ -1,9 +1,21 @@
 .dashboard-main-header {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   padding: 28px 32px 20px;
+}
+.dashboard-main-header::before {
+  content: "";
+  position: absolute;
+  top: -30px;
+  left: 0;
+  width: 480px;
+  height: 220px;
+  background: radial-gradient(ellipse 60% 60% at 15% 20%, rgba(86, 211, 100, 0.07), transparent 72%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .dashboard-greeting h1 {
