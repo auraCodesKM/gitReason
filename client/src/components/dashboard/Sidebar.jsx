@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
-import { LayoutGrid, Activity, FolderGit, Telescope, Settings as SettingsIcon } from "lucide-react";
+import {
+  LayoutGrid,
+  Activity,
+  FolderGit,
+  Telescope,
+  Settings as SettingsIcon,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { LogoMark } from "../../sections/LogoMark";
+import { DrawnUnderline } from "../../sections/DrawnUnderline";
 import "./sidebar.css";
 
 const SECTIONS = [
@@ -12,7 +21,7 @@ const SECTIONS = [
 // page: "dashboard" (default) tracks scroll position within the current
 // page's own #id sections; any other page (e.g. "settings") just links
 // back to those sections on /dashboard instead of scroll-spying itself.
-export function Sidebar({ open, onClose, hasContent, page = "dashboard" }) {
+export function Sidebar({ open, onClose, onToggle, hasContent, page = "dashboard" }) {
   const [active, setActive] = useState("overview");
   const onDashboard = page === "dashboard";
 
@@ -49,10 +58,23 @@ export function Sidebar({ open, onClose, hasContent, page = "dashboard" }) {
     <>
       {open && <div className="sidebar-scrim" onClick={onClose} />}
       <aside className={`dashboard-sidebar ${open ? "is-open" : ""}`}>
-        <a href="/" className="sidebar-logo" aria-label="GitReason">
-          <LogoMark />
-          GitReason
-        </a>
+        <DrawnUnderline className="sidebar-drawn-line" seed={19} strokeWidth="2" />
+
+        <div className="sidebar-logo-row">
+          <a href="/" className="sidebar-logo" aria-label="GitReason">
+            <LogoMark />
+            <span className="sidebar-logo-text">GitReason</span>
+          </a>
+          <button
+            type="button"
+            className="sidebar-collapse-btn"
+            onClick={onToggle}
+            aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
+            title={open ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            {open ? <PanelLeftClose size={16} strokeWidth={2} /> : <PanelLeftOpen size={16} strokeWidth={2} />}
+          </button>
+        </div>
 
         <nav className="sidebar-nav">
           {SECTIONS.map((s) => {
@@ -65,23 +87,24 @@ export function Sidebar({ open, onClose, hasContent, page = "dashboard" }) {
                 href={href}
                 className={`sidebar-nav-item ${isActive ? "is-active" : ""}`}
                 onClick={closeIfMobile}
+                title={s.label}
               >
                 <Icon size={16} strokeWidth={2} />
-                {s.label}
+                <span className="sidebar-nav-label">{s.label}</span>
               </a>
             );
           })}
-          <span className="sidebar-nav-item sidebar-nav-item-disabled">
+          <span className="sidebar-nav-item sidebar-nav-item-disabled" title="Insights">
             <Telescope size={16} strokeWidth={2} />
-            Insights
+            <span className="sidebar-nav-label">Insights</span>
             <span className="sidebar-nav-soon">Soon</span>
           </span>
         </nav>
 
         <div className="sidebar-footer">
-          <a href="/settings" className={`sidebar-nav-item ${page === "settings" ? "is-active" : ""}`}>
+          <a href="/settings" className={`sidebar-nav-item ${page === "settings" ? "is-active" : ""}`} title="Settings">
             <SettingsIcon size={16} strokeWidth={2} />
-            Settings
+            <span className="sidebar-nav-label">Settings</span>
           </a>
         </div>
       </aside>

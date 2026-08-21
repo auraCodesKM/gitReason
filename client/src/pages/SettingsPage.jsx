@@ -42,7 +42,14 @@ export default function SettingsPage() {
     <div className="dashboard-page">
       <div className="grain" />
       <DashboardShell
-        sidebar={<Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} page="settings" />}
+        sidebar={
+          <Sidebar
+            open={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            onToggle={() => setSidebarOpen((v) => !v)}
+            page="settings"
+          />
+        }
         header={
           <DashboardHeader
             user={user}

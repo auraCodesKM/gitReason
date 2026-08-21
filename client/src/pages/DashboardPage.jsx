@@ -160,7 +160,12 @@ export default function DashboardPage() {
       <div className="grain" />
       <DashboardShell
         sidebar={
-          <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} hasContent={hasCodebases} />
+          <Sidebar
+            open={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            onToggle={() => setSidebarOpen((v) => !v)}
+            hasContent={hasCodebases}
+          />
         }
         header={
           <DashboardHeader user={user} hasCodebases={hasCodebases} onToggleSidebar={() => setSidebarOpen((v) => !v)} />

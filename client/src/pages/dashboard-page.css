@@ -25,6 +25,15 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  transition: max-width 0.2s ease;
+}
+
+/* the content area doesn't auto-center (deliberately left-aligned under
+   the sidebar), so collapsing the sidebar without widening this cap
+   leaves a lopsided empty gutter on the right instead of reclaiming the
+   space - not symmetric with the sidebar-open layout. */
+.dashboard-shell:has(.dashboard-sidebar:not(.is-open)) .dashboard-main-content {
+  max-width: 1560px;
 }
 
 .dashboard-section { scroll-margin-top: 20px; }

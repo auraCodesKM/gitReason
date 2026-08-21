@@ -49,8 +49,11 @@
   gap: 12px;
 }
 
+/* Desktop's own collapse toggle lives inside the sidebar now
+   (.sidebar-collapse-btn) - this one is the mobile-only trigger for the
+   overlay drawer, which has no reachable control of its own when closed. */
 .sidebar-toggle {
-  display: flex;
+  display: none;
   flex-shrink: 0;
   flex-direction: column;
   justify-content: center;
@@ -72,6 +75,7 @@
 }
 
 @media (max-width: 900px) {
+  .sidebar-toggle { display: flex; }
   .dashboard-main-header { padding: 18px 20px 16px; flex-wrap: wrap; }
 }
 
