@@ -28,13 +28,17 @@ export default function SignPage() {
   const [repoValue, setRepoValue] = useState("");
   const [errorReason, setErrorReason] = useState(null);
   const [pending, setPending] = useState(false);
+  const [showRepoField, setShowRepoField] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const repo = params.get("repo");
     const reason = params.get("reason");
 
-    if (repo) setRepoValue(normalizeRepoInput(repo));
+    if (repo) {
+      setRepoValue(normalizeRepoInput(repo));
+      setShowRepoField(true);
+    }
     if (params.get("auth") === "error") setErrorReason(reason || "error");
 
     if (params.has("auth") || params.has("reason")) {
@@ -73,33 +77,38 @@ export default function SignPage() {
         <form className="sign-content" onSubmit={handleContinue}>
           <h1>Connect GitHub</h1>
           <p className="sign-copy">
-            Sign in to analyze private repositories and save your history. A repository
-            is optional here — add one now or just sign in and pick one from your dashboard.
+            Sign in to save your history and analyze private repositories.
           </p>
-
-          <label className="sign-field" htmlFor="sign-repo">
-            <span className="sign-field-label">Repository (optional)</span>
-            <div className="sign-field-input">
-              <span className="sign-field-prefix">github.com/</span>
-              <input
-                id="sign-repo"
-                type="text"
-                placeholder="owner/repository"
-                value={repoValue}
-                onChange={(e) => { setRepoValue(normalizeRepoInput(e.target.value)); setErrorReason(null); }}
-                autoFocus
-              />
-            </div>
-          </label>
-
-          {errorReason && (
-            <p className="sign-error">{ERROR_COPY[errorReason] || ERROR_COPY.error}</p>
-          )}
 
           <button type="submit" className="btn btn-gold sign-cta" disabled={!canContinue || pending}>
             <GitHubMark />
             {pending ? "Redirecting…" : "Continue with GitHub"}
           </button>
+
+          {errorReason && (
+            <p className="sign-error">{ERROR_COPY[errorReason] || ERROR_COPY.error}</p>
+          )}
+
+          {showRepoField ? (
+            <label className="sign-field" htmlFor="sign-repo">
+              <span className="sign-field-label">Repository</span>
+              <div className="sign-field-input">
+                <span className="sign-field-prefix">github.com/</span>
+                <input
+                  id="sign-repo"
+                  type="text"
+                  placeholder="owner/repository"
+                  value={repoValue}
+                  onChange={(e) => { setRepoValue(normalizeRepoInput(e.target.value)); setErrorReason(null); }}
+                  autoFocus
+                />
+              </div>
+            </label>
+          ) : (
+            <button type="button" className="sign-toggle" onClick={() => setShowRepoField(true)}>
+              Have a specific private repo in mind? Add it first
+            </button>
+          )}
 
           <p className="sign-secondary">
             Public repositories can be analyzed without signing in.
