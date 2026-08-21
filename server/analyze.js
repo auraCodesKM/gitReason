@@ -7,7 +7,7 @@ import {
 } from "./github.js";
 import { filterTree } from "./noiseFilter.js";
 import { llmComplete } from "./llm.js";
-import { analysesRepo } from "./db/index.js";
+import { analysesRepo, usersRepo } from "./db/index.js";
 import { getSession } from "./session.js";
 
 const MAX_README_CHARS = 4000;
@@ -117,6 +117,10 @@ export async function handleAnalyzeStream(req, res) {
 
     const session = await getSession(req);
     const token = session?.token;
+    // Bring-your-own-key: a signed-in user's own Gemini key (if they've set
+    // one) is used for their analyses instead of the shared server key —
+    // undefined here just means llmComplete falls back to GEMINI_API_KEY.
+    const geminiKey = session?.userId ? await usersRepo.getGeminiKey(session.userId) : null;
 
     send("phase", { phase: "checking_access" });
     let repoResult;
@@ -152,6 +156,7 @@ export async function handleAnalyzeStream(req, res) {
       explanation = await llmComplete(buildExplanationPrompt(filteredTree, readme), {
         system: EXPLANATION_SYSTEM,
         signal: abortController.signal,
+        apiKey: geminiKey,
       });
     } catch (err) {
       send("error", { message: err.message === "rate_limited" ? "rate_limited" : "error" });
@@ -171,6 +176,7 @@ export async function handleAnalyzeStream(req, res) {
           system: GRAPH_SYSTEM,
           format: "json",
           signal: abortController.signal,
+          apiKey: geminiKey,
         });
       } catch (err) {
         send("error", { message: err.message === "rate_limited" ? "rate_limited" : "error" });

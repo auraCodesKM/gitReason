@@ -2,7 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import { SCHEMA_SQL } from "./schema.js";
+import { SCHEMA_SQL, MIGRATIONS, isDuplicateColumnError } from "./schema.js";
 
 // node:sqlite's API is synchronous — wrapped in resolved Promises so
 // db/repository/*.js can `await` uniformly regardless of which provider
@@ -14,6 +14,13 @@ export function createSqliteDb() {
 
   const raw = new DatabaseSync(path.join(dataDir, "gitreason.db"));
   raw.exec(SCHEMA_SQL);
+  for (const sql of MIGRATIONS) {
+    try {
+      raw.exec(sql);
+    } catch (err) {
+      if (!isDuplicateColumnError(err)) throw err;
+    }
+  }
 
   return {
     prepare(sql) {

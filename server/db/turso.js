@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client";
-import { SCHEMA_SQL } from "./schema.js";
+import { SCHEMA_SQL, MIGRATIONS, isDuplicateColumnError } from "./schema.js";
 
 // Turso (libSQL) is wire-compatible SQLite over HTTP — same SQL, same `?`
 // placeholders, genuinely async client. Exposes the identical
@@ -16,6 +16,13 @@ export async function createTursoDb() {
 
   const client = createClient({ url, authToken });
   await client.executeMultiple(SCHEMA_SQL);
+  for (const sql of MIGRATIONS) {
+    try {
+      await client.execute(sql);
+    } catch (err) {
+      if (!isDuplicateColumnError(err)) throw err;
+    }
+  }
 
   return {
     prepare(sql) {

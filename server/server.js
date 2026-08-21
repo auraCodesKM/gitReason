@@ -10,7 +10,7 @@ import {
   handleAuthLogout,
 } from "./auth.js";
 import { handleAnalyzeStream, handleFileContent } from "./analyze.js";
-import { handleUserMe, handleUserHistory, handleUserHistoryItem } from "./user.js";
+import { handleUserMe, handleUserHistory, handleUserHistoryItem, handleSetGeminiKey, handleClearGeminiKey } from "./user.js";
 
 if (!process.env.SESSION_SECRET) {
   console.error(
@@ -54,7 +54,7 @@ function corsMiddleware(req, res, next) {
     res.setHeader("Vary", "Origin");
   }
   if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     return res.sendStatus(204);
   }
@@ -94,6 +94,8 @@ app.post("/api/auth/logout", handleAuthLogout);
 app.get("/api/user/me", handleUserMe);
 app.get("/api/user/history", handleUserHistory);
 app.get("/api/user/history/:id", handleUserHistoryItem);
+app.post("/api/user/gemini-key", handleSetGeminiKey);
+app.delete("/api/user/gemini-key", handleClearGeminiKey);
 
 if (hasClientBuild) {
   app.use(express.static(clientDist));

@@ -15,6 +15,82 @@ function timeAgo(ts) {
   return new Date(ts).toLocaleDateString();
 }
 
+function GeminiKeySection({ hasKey, onChange }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState("");
+  const [status, setStatus] = useState(null); // null | "saving" | "error"
+  const [errorMsg, setErrorMsg] = useState("");
+
+  function save(e) {
+    e.preventDefault();
+    if (!value.trim()) return;
+    setStatus("saving");
+    apiFetch("/api/user/gemini-key", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ apiKey: value.trim() }),
+    })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok) {
+          setStatus("error");
+          setErrorMsg(data.message || "Couldn't save that key.");
+          return;
+        }
+        setValue("");
+        setEditing(false);
+        setStatus(null);
+        onChange(true);
+      })
+      .catch(() => {
+        setStatus("error");
+        setErrorMsg("Couldn't reach the server.");
+      });
+  }
+
+  function remove() {
+    apiFetch("/api/user/gemini-key", { method: "DELETE" }).then(() => onChange(false));
+  }
+
+  return (
+    <div className="dashboard-settings-card">
+      <h2 className="dashboard-section-title">Gemini API key</h2>
+      <p className="dashboard-settings-hint">
+        Use your own Gemini quota for analyses instead of the shared one — get a free key at{" "}
+        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a>.
+      </p>
+
+      {hasKey && !editing ? (
+        <div className="dashboard-settings-row">
+          <span className="dashboard-settings-status">✓ Using your own key</span>
+          <button type="button" className="dashboard-settings-link" onClick={() => setEditing(true)}>Replace</button>
+          <button type="button" className="dashboard-settings-link" onClick={remove}>Remove</button>
+        </div>
+      ) : (
+        <form className="dashboard-settings-row" onSubmit={save}>
+          <input
+            type="password"
+            className="dashboard-settings-input"
+            placeholder="AIza…"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            autoComplete="off"
+          />
+          <button type="submit" className="btn btn-solid" disabled={status === "saving" || !value.trim()}>
+            {status === "saving" ? "Checking…" : "Save"}
+          </button>
+          {hasKey && (
+            <button type="button" className="dashboard-settings-link" onClick={() => { setEditing(false); setValue(""); setStatus(null); }}>
+              Cancel
+            </button>
+          )}
+        </form>
+      )}
+      {status === "error" && <p className="dashboard-settings-error">{errorMsg}</p>}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
   const [history, setHistory] = useState(null);
@@ -83,6 +159,11 @@ export default function DashboardPage() {
             <span className="dashboard-stat-label">Last active</span>
           </div>
         </div>
+
+        <GeminiKeySection
+          hasKey={Boolean(user.hasGeminiKey)}
+          onChange={(hasKey) => setUser((u) => ({ ...u, hasGeminiKey: hasKey }))}
+        />
 
         <h2 className="dashboard-section-title">History</h2>
         {!history || history.length === 0 ? (

@@ -31,3 +31,18 @@ export const SCHEMA_SQL = `
 
   CREATE INDEX IF NOT EXISTS idx_analyses_user ON analyses(user_id, created_at DESC);
 `;
+
+// Forward-only, idempotent migrations for columns added after the initial
+// CREATE TABLE — SQLite/libSQL don't support "ADD COLUMN IF NOT EXISTS"
+// portably, so each adapter runs these individually and ignores the
+// "duplicate column" error when a column already exists.
+export const MIGRATIONS = [
+  // Encrypted per-user Gemini API key (AES-256-GCM, same as github_token_enc)
+  // — lets a signed-in user use their own quota instead of the shared
+  // server key. NULL means "use the server's GEMINI_API_KEY".
+  `ALTER TABLE users ADD COLUMN gemini_key_enc TEXT`,
+];
+
+export function isDuplicateColumnError(err) {
+  return /duplicate column name/i.test(err?.message || "");
+}
