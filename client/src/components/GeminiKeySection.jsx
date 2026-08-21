@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Key } from "lucide-react";
 import { apiFetch } from "../lib/api";
+import { IconBadge } from "./dashboard/IconBadge";
 
 export function GeminiKeySection({ hasKey, onChange }) {
   const [editing, setEditing] = useState(false);
@@ -41,7 +43,13 @@ export function GeminiKeySection({ hasKey, onChange }) {
   const showForm = editing || !hasKey;
 
   return (
-    <div className="settings-card">
+    <div className="dashboard-panel">
+      <div className="dashboard-panel-head">
+        <div className="dashboard-panel-head-title">
+          <IconBadge icon={Key} tone="amber" />
+          <h2>AI provider</h2>
+        </div>
+      </div>
       <h3 className="settings-card-title">Gemini</h3>
       <p className="settings-card-hint">Use your own Gemini API quota for repository analysis.</p>
 

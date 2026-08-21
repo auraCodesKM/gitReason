@@ -1,4 +1,9 @@
-.dashboard-page { min-height: 100dvh; }
+/* overflow-x:hidden is a deliberate safety net, not just cosmetic - the
+   decorative glows below are absolutely-positioned wider than their own
+   box on purpose (a soft fade needs room past the visible edge), and
+   without this the whole document becomes horizontally scrollable on
+   narrow viewports even though nothing visible is actually clipped. */
+.dashboard-page { min-height: 100dvh; overflow-x: hidden; }
 
 .dashboard-loading {
   display: flex;

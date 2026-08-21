@@ -9,7 +9,7 @@ function greeting() {
   return "Good evening";
 }
 
-export function DashboardHeader({ user, hasCodebases, onToggleSidebar }) {
+export function DashboardHeader({ user, hasCodebases, onToggleSidebar, heading, subheading }) {
   return (
     <header className="dashboard-main-header">
       <button type="button" className="sidebar-toggle" onClick={onToggleSidebar} aria-label="Toggle menu">
@@ -17,11 +17,12 @@ export function DashboardHeader({ user, hasCodebases, onToggleSidebar }) {
       </button>
 
       <div className="dashboard-greeting">
-        <h1>{greeting()}, {user.username}</h1>
+        <h1>{heading ?? `${greeting()}, ${user.username}`}</h1>
         <p>
-          {hasCodebases
-            ? "Here's what GitReason has learned across your codebases."
-            : "Let's map your first codebase."}
+          {subheading ??
+            (hasCodebases
+              ? "Here's what GitReason has learned across your codebases."
+              : "Let's map your first codebase.")}
         </p>
       </div>
 

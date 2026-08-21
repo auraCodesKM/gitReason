@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
+import { LayoutGrid, Activity, FolderGit, Telescope, Settings as SettingsIcon } from "lucide-react";
 import { LogoMark } from "../../sections/LogoMark";
 import "./sidebar.css";
 
 const SECTIONS = [
-  { id: "overview", label: "Overview" },
-  { id: "activity", label: "Activity" },
-  { id: "codebases", label: "Codebases" },
+  { id: "overview", label: "Overview", icon: LayoutGrid },
+  { id: "activity", label: "Activity", icon: Activity },
+  { id: "codebases", label: "Codebases", icon: FolderGit },
 ];
 
-export function Sidebar({ mobileOpen, onCloseMobile, hasContent }) {
+// page: "dashboard" (default) tracks scroll position within the current
+// page's own #id sections; any other page (e.g. "settings") just links
+// back to those sections on /dashboard instead of scroll-spying itself.
+export function Sidebar({ mobileOpen, onCloseMobile, hasContent, page = "dashboard" }) {
   const [active, setActive] = useState("overview");
+  const onDashboard = page === "dashboard";
 
   useEffect(() => {
-    if (!hasContent) return;
+    if (!onDashboard || !hasContent) return;
     const ids = SECTIONS.map((s) => s.id);
     const LINE = 140; // px from the top of the viewport
 
@@ -30,7 +35,7 @@ export function Sidebar({ mobileOpen, onCloseMobile, hasContent }) {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [hasContent]);
+  }, [onDashboard, hasContent]);
 
   return (
     <>
@@ -42,29 +47,34 @@ export function Sidebar({ mobileOpen, onCloseMobile, hasContent }) {
         </a>
 
         <nav className="sidebar-nav">
-          {SECTIONS.map((s) =>
-            hasContent ? (
+          {SECTIONS.map((s) => {
+            const Icon = s.icon;
+            const isActive = onDashboard && (hasContent ? active === s.id : s.id === "overview");
+            const href = onDashboard ? `#${s.id}` : `/dashboard#${s.id}`;
+            return (
               <a
                 key={s.id}
-                href={`#${s.id}`}
-                className={`sidebar-nav-item ${active === s.id ? "is-active" : ""}`}
+                href={href}
+                className={`sidebar-nav-item ${isActive ? "is-active" : ""}`}
                 onClick={onCloseMobile}
               >
+                <Icon size={16} strokeWidth={2} />
                 {s.label}
               </a>
-            ) : (
-              <span key={s.id} className={`sidebar-nav-item ${s.id === "overview" ? "is-active" : ""}`}>
-                {s.label}
-              </span>
-            )
-          )}
-          <span className="sidebar-nav-item sidebar-nav-item-disabled" title="Coming soon">
+            );
+          })}
+          <span className="sidebar-nav-item sidebar-nav-item-disabled">
+            <Telescope size={16} strokeWidth={2} />
             Insights
+            <span className="sidebar-nav-soon">Soon</span>
           </span>
         </nav>
 
         <div className="sidebar-footer">
-          <a href="/settings" className="sidebar-nav-item">Settings</a>
+          <a href="/settings" className={`sidebar-nav-item ${page === "settings" ? "is-active" : ""}`}>
+            <SettingsIcon size={16} strokeWidth={2} />
+            Settings
+          </a>
         </div>
       </aside>
     </>
