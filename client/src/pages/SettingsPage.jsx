@@ -7,6 +7,7 @@ import { Sidebar } from "../components/dashboard/Sidebar";
 import { DashboardHeader } from "../components/dashboard/DashboardHeader";
 import { IconBadge } from "../components/dashboard/IconBadge";
 import { GeminiKeySection } from "../components/GeminiKeySection";
+import { SquareSnake } from "../components/SquareSnake";
 import "../pages/dashboard-page.css";
 import "./settings-page.css";
 
@@ -29,7 +30,11 @@ export default function SettingsPage() {
   }, []);
 
   if (loading || !user) {
-    return <div className="dashboard-page dashboard-loading">Loading…</div>;
+    return (
+      <div className="dashboard-page dashboard-loading">
+        <SquareSnake />
+      </div>
+    );
   }
 
   return (

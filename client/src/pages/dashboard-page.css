@@ -1,9 +1,13 @@
-/* overflow-x:hidden is a deliberate safety net, not just cosmetic - the
-   decorative glows below are absolutely-positioned wider than their own
-   box on purpose (a soft fade needs room past the visible edge), and
+/* Clipping the decorative glows' horizontal overflow, not just cosmetic -
    without this the whole document becomes horizontally scrollable on
-   narrow viewports even though nothing visible is actually clipped. */
-.dashboard-page { min-height: 100dvh; overflow-x: hidden; }
+   narrow viewports even though nothing visible is actually clipped.
+   overflow-x:clip specifically (not hidden): per the CSS Overflow spec,
+   pairing a non-"clip" non-visible overflow-x with an unset overflow-y
+   forces overflow-y to compute as "auto" too, silently turning this into
+   its own scroll container - which broke the sidebar's position:sticky
+   (it stuck to this container's scrollport instead of the window's).
+   "clip" is exempt from that pairing rule, so overflow-y stays visible. */
+.dashboard-page { min-height: 100dvh; overflow-x: clip; }
 
 .dashboard-loading {
   display: flex;

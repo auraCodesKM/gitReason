@@ -31,6 +31,17 @@
   color: var(--muted, #9a9a9a);
 }
 
+/* the same hand-drawn accent treatment as the landing hero's "Codebase" -
+   .headline-accent/.headline-underline are shared/global (App.css), this
+   just supplies the em's own color+font in this smaller header context. */
+.dashboard-greeting h1 em {
+  font-family: "Kalam", cursive, sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 1.05em;
+  color: var(--accent, #56d364);
+}
+
 .dashboard-header-actions {
   flex-shrink: 0;
   display: flex;

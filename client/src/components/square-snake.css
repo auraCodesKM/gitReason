@@ -1,0 +1,17 @@
+.square-snake {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.square-snake-cell {
+  background: #e6e6e6;
+  border-radius: 2px;
+  animation: square-snake-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes square-snake-pulse {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 1; }
+}

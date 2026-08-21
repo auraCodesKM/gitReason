@@ -1,5 +1,6 @@
 import { AnalyzeRepoButton } from "../AnalyzeRepoButton";
 import { AccountMenu } from "../AccountMenu";
+import { DrawnUnderline } from "../../sections/DrawnUnderline";
 import "./dashboard-header.css";
 
 function greeting() {
@@ -17,7 +18,17 @@ export function DashboardHeader({ user, hasCodebases, onToggleSidebar, heading, 
       </button>
 
       <div className="dashboard-greeting">
-        <h1>{heading ?? `${greeting()}, ${user.username}`}</h1>
+        <h1>
+          {heading ?? (
+            <>
+              {greeting()},{" "}
+              <span className="headline-accent">
+                <em>{user.username}</em>
+                <DrawnUnderline seed={user.username.length * 11 + 3} strokeWidth="2.6" />
+              </span>
+            </>
+          )}
+        </h1>
         <p>
           {subheading ??
             (hasCodebases
