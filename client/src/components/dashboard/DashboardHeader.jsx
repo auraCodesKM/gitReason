@@ -13,7 +13,7 @@ function greeting() {
 export function DashboardHeader({ user, hasCodebases, onToggleSidebar, heading, subheading }) {
   return (
     <header className="dashboard-main-header">
-      <button type="button" className="sidebar-toggle" onClick={onToggleSidebar} aria-label="Toggle menu">
+      <button type="button" className="sidebar-toggle" onClick={onToggleSidebar} aria-label="Toggle sidebar" title="Toggle sidebar">
         <span /><span /><span />
       </button>
 

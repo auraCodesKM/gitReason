@@ -14,6 +14,7 @@ import { ArchitectureSnapshot } from "../components/dashboard/ArchitectureSnapsh
 import { RecentAnalyses } from "../components/dashboard/RecentAnalyses";
 import { AnalyzeRepoButton } from "../components/AnalyzeRepoButton";
 import { SquareSnake } from "../components/SquareSnake";
+import { useSidebarOpen } from "../hooks/useSidebarOpen";
 import "./dashboard-page.css";
 
 // history is already sorted DESC by createdAt - the first occurrence of
@@ -51,7 +52,7 @@ export default function DashboardPage() {
   const [languages, setLanguages] = useState(null);
   const [selectedRepo, setSelectedRepo] = useState(null); // repoFullName or "__all__"
   const [loading, setLoading] = useState(true);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useSidebarOpen();
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("auth") === "success") {
@@ -159,10 +160,10 @@ export default function DashboardPage() {
       <div className="grain" />
       <DashboardShell
         sidebar={
-          <Sidebar mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} hasContent={hasCodebases} />
+          <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} hasContent={hasCodebases} />
         }
         header={
-          <DashboardHeader user={user} hasCodebases={hasCodebases} onToggleSidebar={() => setMobileOpen((v) => !v)} />
+          <DashboardHeader user={user} hasCodebases={hasCodebases} onToggleSidebar={() => setSidebarOpen((v) => !v)} />
         }
       >
         {!hasCodebases ? (

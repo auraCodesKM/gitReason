@@ -12,7 +12,7 @@ const SECTIONS = [
 // page: "dashboard" (default) tracks scroll position within the current
 // page's own #id sections; any other page (e.g. "settings") just links
 // back to those sections on /dashboard instead of scroll-spying itself.
-export function Sidebar({ mobileOpen, onCloseMobile, hasContent, page = "dashboard" }) {
+export function Sidebar({ open, onClose, hasContent, page = "dashboard" }) {
   const [active, setActive] = useState("overview");
   const onDashboard = page === "dashboard";
 
@@ -37,10 +37,18 @@ export function Sidebar({ mobileOpen, onCloseMobile, hasContent, page = "dashboa
     return () => window.removeEventListener("scroll", onScroll);
   }, [onDashboard, hasContent]);
 
+  // Navigating via a link should close the mobile overlay drawer (its job
+  // is to get out of the way), but leave the desktop sidebar exactly as
+  // the user left it - collapsing it on every click there would be
+  // surprising, not helpful.
+  function closeIfMobile() {
+    if (window.matchMedia("(max-width: 900px)").matches) onClose();
+  }
+
   return (
     <>
-      {mobileOpen && <div className="sidebar-scrim" onClick={onCloseMobile} />}
-      <aside className={`dashboard-sidebar ${mobileOpen ? "is-open" : ""}`}>
+      {open && <div className="sidebar-scrim" onClick={onClose} />}
+      <aside className={`dashboard-sidebar ${open ? "is-open" : ""}`}>
         <a href="/" className="sidebar-logo" aria-label="GitReason">
           <LogoMark />
           GitReason
@@ -56,7 +64,7 @@ export function Sidebar({ mobileOpen, onCloseMobile, hasContent, page = "dashboa
                 key={s.id}
                 href={href}
                 className={`sidebar-nav-item ${isActive ? "is-active" : ""}`}
-                onClick={onCloseMobile}
+                onClick={closeIfMobile}
               >
                 <Icon size={16} strokeWidth={2} />
                 {s.label}

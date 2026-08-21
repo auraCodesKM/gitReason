@@ -8,13 +8,14 @@ import { DashboardHeader } from "../components/dashboard/DashboardHeader";
 import { IconBadge } from "../components/dashboard/IconBadge";
 import { GeminiKeySection } from "../components/GeminiKeySection";
 import { SquareSnake } from "../components/SquareSnake";
+import { useSidebarOpen } from "../hooks/useSidebarOpen";
 import "../pages/dashboard-page.css";
 import "./settings-page.css";
 
 export default function SettingsPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useSidebarOpen();
 
   useEffect(() => {
     apiFetch("/api/user/me")
@@ -41,13 +42,13 @@ export default function SettingsPage() {
     <div className="dashboard-page">
       <div className="grain" />
       <DashboardShell
-        sidebar={<Sidebar mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} page="settings" />}
+        sidebar={<Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} page="settings" />}
         header={
           <DashboardHeader
             user={user}
             heading="Settings"
             subheading="Manage your account and integrations."
-            onToggleSidebar={() => setMobileOpen((v) => !v)}
+            onToggleSidebar={() => setSidebarOpen((v) => !v)}
           />
         }
       >
