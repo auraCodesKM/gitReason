@@ -1,11 +1,11 @@
-import { PieChart } from "lucide-react";
+import { PieChart, ChevronDown } from "lucide-react";
 import { IconBadge } from "./IconBadge";
 import "./codebase-composition.css";
 
 const SHADES = ["var(--accent, #56d364)", "rgba(86,211,100,0.5)", "rgba(86,211,100,0.28)", "rgba(255,255,255,0.16)"];
 
-export function CodebaseComposition({ repoFullName, languages }) {
-  if (!repoFullName) return null;
+export function CodebaseComposition({ codebases, selectedRepo, onSelectRepo, languages }) {
+  if (!selectedRepo) return null;
 
   const entries = languages ? Object.entries(languages).sort((a, b) => b[1] - a[1]) : null;
   const total = entries ? entries.reduce((s, [, v]) => s + v, 0) : 0;
@@ -25,7 +25,19 @@ export function CodebaseComposition({ repoFullName, languages }) {
           <IconBadge icon={PieChart} tone="cyan" />
           <h2>Codebase composition</h2>
         </div>
-        <span className="panel-head-sub">{repoFullName}</span>
+        <div className="composition-select-wrap">
+          <select
+            className="composition-select"
+            value={selectedRepo}
+            onChange={(e) => onSelectRepo(e.target.value)}
+          >
+            {codebases.map((c) => (
+              <option key={c.repoFullName} value={c.repoFullName}>{c.repoFullName}</option>
+            ))}
+            {codebases.length > 1 && <option value="__all__">All repositories</option>}
+          </select>
+          <ChevronDown size={13} strokeWidth={2} className="composition-select-chevron" />
+        </div>
       </div>
 
       {languages === null && <p className="dashboard-panel-loading">Loading…</p>}

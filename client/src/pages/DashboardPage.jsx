@@ -13,6 +13,7 @@ import { CodebaseComposition } from "../components/dashboard/CodebaseComposition
 import { ArchitectureSnapshot } from "../components/dashboard/ArchitectureSnapshot";
 import { RecentAnalyses } from "../components/dashboard/RecentAnalyses";
 import { AnalyzeRepoButton } from "../components/AnalyzeRepoButton";
+import { SquareSnake } from "../components/SquareSnake";
 import "./dashboard-page.css";
 
 // history is already sorted DESC by createdAt - the first occurrence of
@@ -48,6 +49,7 @@ export default function DashboardPage() {
   const [activity, setActivity] = useState(null);
   const [latestDetail, setLatestDetail] = useState(null);
   const [languages, setLanguages] = useState(null);
+  const [selectedRepo, setSelectedRepo] = useState(null); // repoFullName or "__all__"
   const [loading, setLoading] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -92,15 +94,53 @@ export default function DashboardPage() {
       .then((res) => res.json())
       .then((data) => setLatestDetail(data.analysis))
       .catch(() => setLatestDetail(null));
-    apiFetch(`/api/user/repo-languages?repo=${encodeURIComponent(latest.repoFullName)}`)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latest?.id]);
+
+  // The composition chart's own repo selector defaults to the most recent
+  // codebase once it's known, but only sets it once - it shouldn't fight a
+  // choice the user already made if this list re-renders.
+  useEffect(() => {
+    if (latest && !selectedRepo) setSelectedRepo(latest.repoFullName);
+  }, [latest, selectedRepo]);
+
+  useEffect(() => {
+    if (!selectedRepo) return;
+    setLanguages(null);
+
+    if (selectedRepo === "__all__") {
+      Promise.all(
+        codebases.map((c) =>
+          apiFetch(`/api/user/repo-languages?repo=${encodeURIComponent(c.repoFullName)}`)
+            .then((res) => res.json())
+            .then((data) => data.languages || {})
+            .catch(() => ({}))
+        )
+      ).then((allLanguages) => {
+        const merged = {};
+        for (const langs of allLanguages) {
+          for (const [name, bytes] of Object.entries(langs)) {
+            merged[name] = (merged[name] || 0) + bytes;
+          }
+        }
+        setLanguages(merged);
+      });
+      return;
+    }
+
+    apiFetch(`/api/user/repo-languages?repo=${encodeURIComponent(selectedRepo)}`)
       .then((res) => res.json())
       .then((data) => setLanguages(data.languages))
       .catch(() => setLanguages({}));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latest?.id]);
+  }, [selectedRepo, codebases]);
 
   if (loading || !user) {
-    return <div className="dashboard-page dashboard-loading">Loading…</div>;
+    return (
+      <div className="dashboard-page dashboard-loading">
+        <SquareSnake />
+      </div>
+    );
   }
 
   const hasCodebases = codebases.length > 0;
@@ -155,7 +195,12 @@ export default function DashboardPage() {
 
             <section className="dashboard-section dashboard-grid-2">
               <CodebaseList codebases={codebases} />
-              <CodebaseComposition repoFullName={latest?.repoFullName} languages={languages} />
+              <CodebaseComposition
+                codebases={codebases}
+                selectedRepo={selectedRepo}
+                onSelectRepo={setSelectedRepo}
+                languages={languages}
+              />
             </section>
 
             <section className="dashboard-section dashboard-grid-2">
