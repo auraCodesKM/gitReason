@@ -1,20 +1,11 @@
 import { useState } from "react";
+import { FolderGit } from "lucide-react";
+import { IconBadge } from "./IconBadge";
 import { timeAgo } from "../../lib/time";
+import { toneForKey } from "../../lib/tone";
 import "./codebase-list.css";
 
 const VISIBLE_CAP = 5;
-
-function RepoIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M4 1.5h8.25a.25.25 0 0 1 .25.25v11.5a.25.25 0 0 1-.25.25H4.5a1 1 0 0 1-1-1V2.5a1 1 0 0 1 1-1Z"
-        stroke="currentColor" strokeWidth="1.1"
-      />
-      <path d="M3.5 11.75h9" stroke="currentColor" strokeWidth="1.1" />
-    </svg>
-  );
-}
 
 function CodebaseRow({ item }) {
   const [owner, repoName] = item.repoFullName.split("/");
@@ -25,11 +16,12 @@ function CodebaseRow({ item }) {
   if (item.edgeCount != null) metaParts.push(`${item.edgeCount} relationship${item.edgeCount === 1 ? "" : "s"}`);
 
   const baseHref = `/analyze?repo=${encodeURIComponent(item.repoFullName)}&cached=${item.id}`;
+  const tone = toneForKey(item.repoFullName);
 
   return (
     <div className="codebase-card">
       <div className="codebase-card-main">
-        <span className="codebase-icon"><RepoIcon /></span>
+        <span className={`repo-avatar repo-avatar-${tone}`}>{repoName[0]?.toUpperCase()}</span>
         <div className="codebase-info">
           <h3 className="codebase-name">
             <span className="codebase-owner">{owner}</span> / {repoName}
@@ -55,7 +47,10 @@ export function CodebaseList({ codebases }) {
   return (
     <div className="dashboard-panel codebase-list-panel" id="codebases">
       <div className="dashboard-panel-head">
-        <h2>Your codebases</h2>
+        <div className="dashboard-panel-head-title">
+          <IconBadge icon={FolderGit} tone="accent" />
+          <h2>Your codebases</h2>
+        </div>
         {codebases.length > VISIBLE_CAP && (
           <button type="button" className="panel-head-action" onClick={() => setExpanded((v) => !v)}>
             {expanded ? "Show less" : `View all (${codebases.length}) →`}

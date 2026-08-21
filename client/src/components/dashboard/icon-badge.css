@@ -1,0 +1,16 @@
+.icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.08));
+  background: var(--panel-bg-raised, #111111);
+}
+
+.icon-badge-accent { color: var(--accent, #56d364); }
+.icon-badge-amber { color: var(--risk-mid, #d8b34a); }
+.icon-badge-blue { color: var(--syntax-keyword, #7aa6e8); }
+.icon-badge-cyan { color: var(--syntax-property, #79c7d6); }

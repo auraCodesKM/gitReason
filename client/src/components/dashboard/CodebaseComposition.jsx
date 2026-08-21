@@ -1,3 +1,5 @@
+import { PieChart } from "lucide-react";
+import { IconBadge } from "./IconBadge";
 import "./codebase-composition.css";
 
 const SHADES = ["var(--accent, #56d364)", "rgba(86,211,100,0.5)", "rgba(86,211,100,0.28)", "rgba(255,255,255,0.16)"];
@@ -19,7 +21,10 @@ export function CodebaseComposition({ repoFullName, languages }) {
   return (
     <div className="dashboard-panel codebase-composition">
       <div className="dashboard-panel-head">
-        <h2>Codebase composition</h2>
+        <div className="dashboard-panel-head-title">
+          <IconBadge icon={PieChart} tone="cyan" />
+          <h2>Codebase composition</h2>
+        </div>
         <span className="panel-head-sub">{repoFullName}</span>
       </div>
 

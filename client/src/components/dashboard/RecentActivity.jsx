@@ -1,3 +1,5 @@
+import { Clock } from "lucide-react";
+import { IconBadge } from "./IconBadge";
 import { timeAgo } from "../../lib/time";
 import "./recent-activity.css";
 
@@ -5,7 +7,10 @@ export function RecentActivity({ items }) {
   return (
     <div className="dashboard-panel recent-activity">
       <div className="dashboard-panel-head">
-        <h2>Recent activity</h2>
+        <div className="dashboard-panel-head-title">
+          <IconBadge icon={Clock} tone="blue" />
+          <h2>Recent activity</h2>
+        </div>
       </div>
 
       {items === null && <p className="dashboard-panel-loading">Loading…</p>}

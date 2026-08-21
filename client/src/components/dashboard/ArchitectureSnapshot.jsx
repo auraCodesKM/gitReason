@@ -1,3 +1,5 @@
+import { Network } from "lucide-react";
+import { IconBadge } from "./IconBadge";
 import "./architecture-snapshot.css";
 
 export function ArchitectureSnapshot({ repoFullName, analysisId, graph }) {
@@ -12,7 +14,10 @@ export function ArchitectureSnapshot({ repoFullName, analysisId, graph }) {
   return (
     <div className="dashboard-panel architecture-snapshot">
       <div className="dashboard-panel-head">
-        <h2>Architecture snapshot</h2>
+        <div className="dashboard-panel-head-title">
+          <IconBadge icon={Network} tone="amber" />
+          <h2>Architecture snapshot</h2>
+        </div>
         <span className="panel-head-sub">{repoFullName}</span>
       </div>
 

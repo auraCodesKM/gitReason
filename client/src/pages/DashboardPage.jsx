@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Agentation } from "agentation";
+import { FolderGit, FileText, Boxes, Network } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { DashboardShell } from "../components/dashboard/DashboardShell";
 import { Sidebar } from "../components/dashboard/Sidebar";
@@ -140,10 +141,10 @@ export default function DashboardPage() {
           <>
             <section id="overview" className="dashboard-section">
               <div className="metric-row">
-                <MetricCard label="Codebases" value={codebases.length} />
-                <MetricCard label="Files understood" value={totals.files} />
-                <MetricCard label="Architecture nodes" value={totals.nodes} />
-                <MetricCard label="Relationships" value={totals.edges} />
+                <MetricCard icon={FolderGit} tone="accent" label="Codebases" value={codebases.length} />
+                <MetricCard icon={FileText} tone="blue" label="Files understood" value={totals.files} />
+                <MetricCard icon={Boxes} tone="amber" label="Architecture nodes" value={totals.nodes} />
+                <MetricCard icon={Network} tone="cyan" label="Relationships" value={totals.edges} />
               </div>
             </section>
 

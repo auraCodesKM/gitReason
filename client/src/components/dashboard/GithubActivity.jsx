@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { Activity } from "lucide-react";
+import { IconBadge } from "./IconBadge";
 import "./github-activity.css";
 
 const RANGES = [
@@ -32,7 +34,10 @@ export function GithubActivity({ activity }) {
   return (
     <div className="dashboard-panel github-activity">
       <div className="dashboard-panel-head">
-        <h2>GitHub activity</h2>
+        <div className="dashboard-panel-head-title">
+          <IconBadge icon={Activity} tone="accent" />
+          <h2>GitHub activity</h2>
+        </div>
         {activity?.available && (
           <div className="range-toggle">
             {RANGES.map((r) => (

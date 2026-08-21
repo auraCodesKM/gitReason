@@ -1,6 +1,7 @@
 .recent-analyses-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 .recent-analyses-table tr {
   cursor: pointer;
@@ -14,16 +15,18 @@
 }
 .recent-analyses-table tr:first-child td { border-top: 0; }
 
+.ra-avatar-cell { width: 34px; padding-right: 0; }
+.repo-avatar-sm { width: 26px; height: 26px; font-size: 11.5px; border-radius: 7px; }
+
 .ra-repo {
   font-family: var(--mono-code, ui-monospace, monospace);
   color: #d8d8d8;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 0;
-  width: 60%;
 }
 
+.ra-status-cell { width: 74px; }
 .ra-status {
   display: inline-block;
   padding: 2px 7px;
@@ -38,6 +41,7 @@
 .ra-status-failed { color: #ff8f8f; background: rgba(255, 90, 90, 0.1); }
 
 .ra-time {
+  width: 54px;
   color: #6a6a6a;
   white-space: nowrap;
   text-align: right;
