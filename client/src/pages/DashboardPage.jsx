@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { LogoMark } from "../sections/LogoMark";
+import { apiFetch } from "../lib/api";
 import "./dashboard-page.css";
 
 function timeAgo(ts) {
@@ -20,7 +21,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/user/me")
+    apiFetch("/api/user/me")
       .then((res) => res.json())
       .then((data) => {
         if (!data.authenticated) {
@@ -28,7 +29,7 @@ export default function DashboardPage() {
           return;
         }
         setUser(data.user);
-        return fetch("/api/user/history").then((res) => res.json());
+        return apiFetch("/api/user/history").then((res) => res.json());
       })
       .then((data) => {
         if (data) setHistory(data.history);
@@ -37,7 +38,7 @@ export default function DashboardPage() {
   }, []);
 
   function handleSignOut() {
-    fetch("/api/auth/logout", { method: "POST" }).then(() => {
+    apiFetch("/api/auth/logout", { method: "POST" }).then(() => {
       window.location.href = "/";
     });
   }

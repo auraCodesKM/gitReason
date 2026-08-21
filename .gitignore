@@ -9,4 +9,8 @@ dist/
 
 # local SQLite data (sessions, analysis history)
 server/data/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
 client/.playwright-cli/

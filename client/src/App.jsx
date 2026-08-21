@@ -17,6 +17,7 @@ import { LogoMark } from "./sections/LogoMark";
 import { SectionDoodle } from "./sections/SectionDoodle";
 import { useRepoCheck } from "./sections/useRepoCheck";
 import { normalizeRepoInput } from "./lib/repo";
+import { apiFetch } from "./lib/api";
 
 const NAV_LINKS = [
   { label: "Understand", href: "#understand", mod: "appear--scale", d: "0.16s" },
@@ -261,7 +262,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    fetch("/api/auth/session")
+    apiFetch("/api/auth/session")
       .then((res) => res.json())
       .then((data) => setAuthUser(data.authenticated ? data.user : null))
       .catch(() => {});

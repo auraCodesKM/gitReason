@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiFetch } from "../lib/api";
 
 export function useRepoCheck() {
   const [repoStatus, setRepoStatus] = useState(null); // 'checking' | 'invalid' | 'not_found' | 'error' | 'rate_limited'
@@ -6,7 +7,7 @@ export function useRepoCheck() {
   async function checkRepo(rawInput) {
     setRepoStatus("checking");
     try {
-      const res = await fetch(`/api/repo/check?url=${encodeURIComponent(rawInput)}`);
+      const res = await apiFetch(`/api/repo/check?url=${encodeURIComponent(rawInput)}`);
       const data = await res.json();
 
       if (data.status === "ready") {

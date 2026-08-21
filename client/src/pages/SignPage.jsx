@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Agentation } from "agentation";
 import { LogoMark } from "../sections/LogoMark";
 import { normalizeRepoInput, isValidRepoPath } from "../lib/repo";
+import { apiUrl } from "../lib/api";
 import "./sign-page.css";
 
 const ERROR_COPY = {
@@ -51,7 +52,7 @@ export default function SignPage() {
     e.preventDefault();
     if (!canContinue) return;
     setPending(true);
-    window.location.href = `/api/auth/github/start?repo=${encodeURIComponent(trimmed)}`;
+    window.location.href = apiUrl(`/api/auth/github/start?repo=${encodeURIComponent(trimmed)}`);
   }
 
   return (

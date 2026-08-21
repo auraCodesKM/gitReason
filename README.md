@@ -17,7 +17,7 @@ Public repositories work without signing in. Private repositories are gated behi
 
 - **Client** — React 18 + Vite, plain JS. No router library; routing is a one-line pathname switch in `main.jsx` (`/`, `/sign`, `/analyze`, `/dashboard`). Mermaid.js renders diagrams, Shiki highlights previewed source files, `markdown-to-jsx` renders the explanation text. Every page and section has its own hand-written CSS file — no CSS framework or component library is in use.
 - **Server** — Express (ESM), zero build step. Analysis progress streams to the client over Server-Sent Events rather than a single blocking request, since a real LLM call can take several seconds and the UI should show what's actually happening, not a spinner.
-- **Persistence** — Node's native `node:sqlite` (no ORM). Every table is accessed through a small repository layer in `server/db/`, so the storage backend can be swapped later (Mongo, Postgres, whatever) without touching any call site.
+- **Persistence** — Node's native `node:sqlite` locally (no ORM), [Turso](https://turso.tech) (libSQL, wire-compatible SQLite) in production. Every table is accessed through a small async repository layer in `server/db/repository/`; `server/db/client.js` picks the backend via `DATABASE_PROVIDER` and the repository code never changes either way.
 - **Auth** — standard GitHub OAuth Authorization Code flow, hand-rolled (no `passport` or session middleware dependency). Sessions are opaque tokens in an `HttpOnly` cookie; the underlying GitHub access token is encrypted at rest with AES-256-GCM and is never sent to the client or logged.
 
 No dependency was added for something a native Node or browser API already covers — `fetch`, `crypto`, and `node:sqlite` do most of the heavy lifting.
@@ -88,8 +88,80 @@ server/
   analyze.js                 the pipeline described above, streamed over SSE
   noiseFilter.js              tree filtering rules
   auth.js, session.js         OAuth flow, cookies, session lookup
-  db/                         SQLite schema + repository layer (users, sessions, analyses)
+  db/
+    schema.js                 shared SQL schema (both providers)
+    sqlite.js, turso.js        low-level adapters, same prepare().run/get/all() shape
+    client.js                  picks the adapter via DATABASE_PROVIDER
+    repository/                users/sessions/analyses — the only thing other modules import from
 ```
+
+## Deployment (V1 team evaluation)
+
+Topology: **Vercel** (frontend, static) → **Render** (backend, Node) → **Turso** (database). Nobody needs local Node, a cloned repo, or local env vars to use the deployed app — only to develop on it.
+
+### A. Turso (database)
+
+1. Install the CLI and sign up: `curl -sSfL https://get.tur.so/install.sh | bash` then `turso auth signup` (or use the [Turso dashboard](https://turso.tech) instead of the CLI throughout).
+2. Create a database: `turso db create gitreason`.
+3. Get the connection values:
+   ```bash
+   turso db show gitreason --url          # → TURSO_DATABASE_URL
+   turso db tokens create gitreason       # → TURSO_AUTH_TOKEN
+   ```
+4. Nothing else to do — the app creates its own tables on first connect (same `CREATE TABLE IF NOT EXISTS` schema as local SQLite, from `server/db/schema.js`).
+
+### B. Render (backend)
+
+1. New **Web Service** → connect this repo → **Root Directory: `server`**.
+2. Build command: `npm install`. Start command: `npm start`.
+3. Environment variables (Render dashboard → Environment):
+   ```
+   NODE_ENV=production
+   PORT=4000                                  # Render sets/overrides this itself — fine either way
+   CLIENT_ORIGIN=https://<your-vercel-domain>.vercel.app
+   GITHUB_CLIENT_ID=...
+   GITHUB_CLIENT_SECRET=...
+   GITHUB_CALLBACK_URL=https://<your-render-service>.onrender.com/api/auth/github/callback
+   SESSION_SECRET=...                         # generate fresh for production, don't reuse the local one
+   GEMINI_API_KEY=...
+   GEMINI_MODEL=gemini-3.5-flash-lite
+   DATABASE_PROVIDER=turso
+   TURSO_DATABASE_URL=...
+   TURSO_AUTH_TOKEN=...
+   ```
+4. Deploy, then check `https://<your-render-service>.onrender.com/health` returns `{"status":"ok","database":"ok",...}`.
+5. Free tier note: the service spins down after inactivity and takes ~30-60s to wake on the next request — expected for a free V1 evaluation deploy, not a bug.
+
+### C. Vercel (frontend)
+
+1. New Project → connect this repo → **Root Directory: `client`**.
+2. Framework preset: Vite (auto-detected). Build command `npm run build`, output `dist` (defaults — no change needed).
+3. Environment variable:
+   ```
+   VITE_API_URL=https://<your-render-service>.onrender.com
+   ```
+4. Deploy. `client/vercel.json` already handles SPA routing (`/analyze`, `/sign`, `/dashboard` all serve `index.html` on direct load/refresh).
+
+### D. GitHub OAuth App configuration
+
+Once both URLs are known:
+
+1. [github.com/settings/developers](https://github.com/settings/developers) → your OAuth App (or create one for this deployment specifically, separate from your local-dev app).
+2. Homepage URL: `https://<your-vercel-domain>.vercel.app`
+3. Authorization callback URL: `https://<your-render-service>.onrender.com/api/auth/github/callback` — must match `GITHUB_CALLBACK_URL` on Render **exactly**, including scheme.
+4. Put that app's Client ID/Secret into Render's env vars (step B.3), not Vercel's — the frontend never sees them.
+
+### Deployment checklist
+
+- [ ] Turso database created, `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` in hand
+- [ ] Render service deployed with `DATABASE_PROVIDER=turso` and all env vars from B.3 set
+- [ ] `GET https://<render-service>.onrender.com/health` → `{"status":"ok","database":"ok"}`
+- [ ] Vercel project deployed with `VITE_API_URL` pointing at the Render URL
+- [ ] GitHub OAuth App's callback URL matches `GITHUB_CALLBACK_URL` on Render exactly
+- [ ] Fresh `SESSION_SECRET` generated for production (not copied from local `.env`)
+- [ ] Full flow tested end to end on the live URLs: sign in with GitHub → analyze a public repo → analyze a private repo → reload `/dashboard` and confirm history persists (proves Turso, not just in-memory state)
+- [ ] `.env`, `.env.local`, and no `*.db` files present in `git status` before pushing
+- [ ] Local dev still works unchanged: `server && npm run dev` (defaults to local SQLite), `client && npm run dev` (relative `/api` paths via the Vite proxy)
 
 ## Current scope
 

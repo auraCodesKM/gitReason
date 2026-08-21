@@ -115,7 +115,7 @@ export async function handleAnalyzeStream(req, res) {
       return res.end();
     }
 
-    const session = getSession(req);
+    const session = await getSession(req);
     const token = session?.token;
 
     send("phase", { phase: "checking_access" });
@@ -201,7 +201,7 @@ export async function handleAnalyzeStream(req, res) {
     send("phase", { phase: "saving" });
     let analysisId = null;
     if (session?.userId) {
-      analysisId = analysesRepo.create({
+      analysisId = await analysesRepo.create({
         userId: session.userId,
         repoFullName: parsed.fullName,
         status: "complete",
@@ -234,7 +234,7 @@ export async function handleFileContent(req, res) {
   const ref = req.query.ref;
   if (!filePath || !ref) return res.status(400).json({ status: "invalid" });
 
-  const session = getSession(req);
+  const session = await getSession(req);
 
   const content = await fetchFileContent(parsed.owner, parsed.repo, filePath, ref, session?.token);
   if (content === null) return res.status(404).json({ status: "not_found" });

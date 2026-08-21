@@ -15,7 +15,9 @@ function prune(map, ttl) {
 }
 
 function clientOrigin() {
-  return process.env.CLIENT_ORIGIN || "";
+  // CLIENT_ORIGIN may be a comma-separated list (server.js uses all of them
+  // for CORS) — the OAuth redirect needs exactly one, so use the first.
+  return (process.env.CLIENT_ORIGIN || "").split(",")[0].trim();
 }
 
 function requireGithubEnv(res) {
@@ -36,7 +38,7 @@ export async function handleRepoCheck(req, res) {
     return res.status(400).json({ status: "invalid" });
   }
 
-  const session = getSession(req);
+  const session = await getSession(req);
 
   try {
     const result = await fetchRepo(parsed.owner, parsed.repo, session?.token);
@@ -141,27 +143,27 @@ export async function handleAuthCallback(req, res) {
     return signError("github_unreachable", pending.repo);
   }
 
-  const user = usersRepo.upsertFromGitHub(githubUser);
-  const sessionId = sessionsRepo.create({ userId: user.id, token, ttlMs: SESSION_TTL_MS });
+  const user = await usersRepo.upsertFromGitHub(githubUser);
+  const sessionId = await sessionsRepo.create({ userId: user.id, token, ttlMs: SESSION_TTL_MS });
   setSessionCookie(res, sessionId);
 
   res.redirect(`${origin}/?auth=success&repo=${encodeURIComponent(pending.repo)}`);
 }
 
-export function handleAuthSession(req, res) {
-  const session = getSession(req);
+export async function handleAuthSession(req, res) {
+  const session = await getSession(req);
   if (!session) return res.json({ authenticated: false, user: null });
 
-  const user = usersRepo.findById(session.userId);
+  const user = await usersRepo.findById(session.userId);
   res.json({
     authenticated: true,
     user: user ? { username: user.username, avatarUrl: user.avatar_url } : null,
   });
 }
 
-export function handleAuthLogout(req, res) {
+export async function handleAuthLogout(req, res) {
   const id = getSessionCookieId(req);
-  if (id) sessionsRepo.deleteById(id);
+  if (id) await sessionsRepo.deleteById(id);
   clearSessionCookie(res);
   res.json({ ok: true });
 }
