@@ -69,6 +69,21 @@ function corsMiddleware(req, res, next) {
   next();
 }
 
+// Express 4 doesn't forward a rejected promise from an async route handler
+// to error middleware on its own — an unguarded await that throws (e.g. a
+// transient Turso network blip) becomes an unhandledRejection, which
+// crashes the whole process by default, taking every user down for one
+// request's failure. Wrapping every handler at registration time catches
+// that without touching any handler's own logic. handleAnalyzeStream is
+// deliberately excluded below - it already has its own complete try/catch
+// tailored to SSE (headers are sent immediately, so a generic JSON 500
+// response after the fact isn't possible there).
+function asyncHandler(fn) {
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -92,20 +107,20 @@ app.get("/health", async (_req, res) => {
   });
 });
 
-app.get("/api/repo/check", handleRepoCheck);
-app.get("/api/repo/file", handleFileContent);
-app.get("/api/analyze/stream", handleAnalyzeStream);
-app.get("/api/auth/github/start", handleAuthStart);
-app.get("/api/auth/github/callback", handleAuthCallback);
-app.get("/api/auth/session", handleAuthSession);
-app.post("/api/auth/logout", handleAuthLogout);
-app.get("/api/user/me", handleUserMe);
-app.get("/api/user/history", handleUserHistory);
-app.get("/api/user/history/:id", handleUserHistoryItem);
-app.post("/api/user/gemini-key", handleSetGeminiKey);
-app.delete("/api/user/gemini-key", handleClearGeminiKey);
-app.get("/api/user/github-activity", handleUserGithubActivity);
-app.get("/api/user/repo-languages", handleRepoLanguages);
+app.get("/api/repo/check", asyncHandler(handleRepoCheck));
+app.get("/api/repo/file", asyncHandler(handleFileContent));
+app.get("/api/analyze/stream", handleAnalyzeStream); // own SSE-safe error handling, not wrapped
+app.get("/api/auth/github/start", asyncHandler(handleAuthStart));
+app.get("/api/auth/github/callback", asyncHandler(handleAuthCallback));
+app.get("/api/auth/session", asyncHandler(handleAuthSession));
+app.post("/api/auth/logout", asyncHandler(handleAuthLogout));
+app.get("/api/user/me", asyncHandler(handleUserMe));
+app.get("/api/user/history", asyncHandler(handleUserHistory));
+app.get("/api/user/history/:id", asyncHandler(handleUserHistoryItem));
+app.post("/api/user/gemini-key", asyncHandler(handleSetGeminiKey));
+app.delete("/api/user/gemini-key", asyncHandler(handleClearGeminiKey));
+app.get("/api/user/github-activity", asyncHandler(handleUserGithubActivity));
+app.get("/api/user/repo-languages", asyncHandler(handleRepoLanguages));
 
 if (hasClientBuild) {
   app.use(express.static(clientDist));
@@ -117,6 +132,32 @@ if (hasClientBuild) {
     res.status(404).json({ status: "not_found", message: "This server is API-only in this deployment." });
   });
 }
+
+// Catch-all for anything asyncHandler forwarded (or a sync throw Express
+// itself caught) - logs server-side for debugging, never leaks internals
+// (stack traces, error messages) to the client.
+app.use((err, _req, res, _next) => {
+  console.error("Unhandled request error:", err?.stack || err?.message || err);
+  if (res.headersSent) return;
+  res.status(500).json({ status: "error", message: "Something went wrong. Try again." });
+});
+
+// Defense in depth below the per-route asyncHandler wrapping: anything
+// that still slips through (a fire-and-forget promise nothing awaited, a
+// truly synchronous bug outside a request) would otherwise crash the
+// process by Node's default and take every user down with it.
+// unhandledRejection: log and keep serving - it's necessarily tied to one
+// already-failed operation, not a sign the whole process is unsound.
+// uncaughtException: state may genuinely be corrupted at that point: log,
+// then exit so Render's process manager restarts clean, rather than limp
+// on in an unknown state.
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled rejection:", err?.stack || err?.message || err);
+});
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err?.stack || err?.message || err);
+  process.exit(1);
+});
 
 // Render (and most hosts) route traffic to the container by port only —
 // binding to 0.0.0.0 rather than the implicit default is required for the
