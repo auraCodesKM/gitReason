@@ -25,6 +25,7 @@ const ERROR_COPY = {
   repo_too_large: "This repository is too large to analyze right now.",
   graph_generation_failed: "Couldn't build a reliable diagram for this repository. Try again.",
   rate_limited: "Rate limit reached. Try again shortly.",
+  gemini_key_required: "Add your own Gemini API key in Settings to analyze repositories from your dashboard.",
   error: "Something went wrong. Try again.",
 };
 
@@ -127,7 +128,11 @@ export default function AnalyzePage() {
       {errorCode && (
         <div className="analyze-status">
           <p className="repo-input-error">{ERROR_COPY[errorCode] || ERROR_COPY.error}</p>
-          <a href="/" className="btn btn-ghost">Back to home</a>
+          {errorCode === "gemini_key_required" ? (
+            <a href="/settings" className="btn btn-solid">Add API key</a>
+          ) : (
+            <a href="/" className="btn btn-ghost">Back to home</a>
+          )}
         </div>
       )}
 
