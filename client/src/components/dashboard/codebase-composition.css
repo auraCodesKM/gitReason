@@ -65,6 +65,14 @@
   padding: 4px 0;
   font-size: 12.5px;
 }
+.composition-legend li:first-child { padding-bottom: 8px; }
+
+.composition-name-dominant em {
+  font-family: "Kalam", cursive, sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 1.1em;
+}
 .composition-swatch {
   width: 8px;
   height: 8px;

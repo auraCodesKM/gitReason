@@ -1,8 +1,8 @@
 import { PieChart, ChevronDown } from "lucide-react";
 import { IconBadge } from "./IconBadge";
+import { DrawnUnderline } from "../../sections/DrawnUnderline";
+import { colorForLanguage } from "../../lib/languageColors";
 import "./codebase-composition.css";
-
-const SHADES = ["var(--accent, #56d364)", "rgba(86,211,100,0.5)", "rgba(86,211,100,0.28)", "rgba(255,255,255,0.16)"];
 
 export function CodebaseComposition({ codebases, selectedRepo, onSelectRepo, languages }) {
   if (!selectedRepo) return null;
@@ -14,8 +14,8 @@ export function CodebaseComposition({ codebases, selectedRepo, onSelectRepo, lan
   if (entries && entries.length && total > 0) {
     const top = entries.slice(0, 3);
     const restBytes = entries.slice(3).reduce((s, [, v]) => s + v, 0);
-    rows = top.map(([name, bytes]) => ({ name, pct: (bytes / total) * 100 }));
-    if (restBytes > 0) rows.push({ name: "Other", pct: (restBytes / total) * 100 });
+    rows = top.map(([name, bytes]) => ({ name, pct: (bytes / total) * 100, color: colorForLanguage(name) }));
+    if (restBytes > 0) rows.push({ name: "Other", pct: (restBytes / total) * 100, color: colorForLanguage("Other") });
   }
 
   return (
@@ -46,15 +46,24 @@ export function CodebaseComposition({ codebases, selectedRepo, onSelectRepo, lan
       {rows.length > 0 && (
         <>
           <div className="composition-bar">
-            {rows.map((r, i) => (
-              <span key={r.name} className="composition-seg" style={{ width: `${r.pct}%`, background: SHADES[i] }} />
+            {rows.map((r) => (
+              <span key={r.name} className="composition-seg" style={{ width: `${r.pct}%`, background: r.color }} />
             ))}
           </div>
           <ul className="composition-legend">
             {rows.map((r, i) => (
               <li key={r.name}>
-                <span className="composition-swatch" style={{ background: SHADES[i] }} />
-                <span className="composition-name">{r.name}</span>
+                <span className="composition-swatch" style={{ background: r.color }} />
+                {i === 0 ? (
+                  <span className="composition-name composition-name-dominant">
+                    <span className="headline-accent">
+                      <em style={{ color: r.color }}>{r.name}</em>
+                      <DrawnUnderline seed={r.name.length * 7 + 2} strokeWidth="2" color={r.color} />
+                    </span>
+                  </span>
+                ) : (
+                  <span className="composition-name">{r.name}</span>
+                )}
                 <span className="composition-pct">{r.pct.toFixed(0)}%</span>
               </li>
             ))}
