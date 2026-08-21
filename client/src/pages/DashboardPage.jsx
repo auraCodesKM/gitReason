@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { LogoMark } from "../sections/LogoMark";
 import { apiFetch } from "../lib/api";
+import { ActivityCalendar } from "../components/ActivityCalendar/ActivityCalendar";
 import "./dashboard-page.css";
 
 const RECENT_LIMIT = 5;
@@ -254,6 +255,13 @@ export default function DashboardPage() {
             </div>
           )}
         </section>
+
+        {history && history.length > 0 && (
+          <section>
+            <h2 className="dashboard-section-title">Activity</h2>
+            <ActivityCalendar history={history} />
+          </section>
+        )}
 
         <section>
           <h2 className="dashboard-section-title">Settings</h2>
