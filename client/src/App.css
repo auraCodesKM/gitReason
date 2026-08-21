@@ -45,7 +45,7 @@ html { scroll-behavior: smooth; }
   --hero-gap: 85px;
   --copy-max: 860px;
   --lede-max: 470px;
-  --font-display: "BubbledotICG-FinePos", "Geist Pixel Circle", monospace;
+  --font-display: "Geist Pixel Circle", monospace;
 }
 
 html, body {

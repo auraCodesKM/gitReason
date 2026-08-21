@@ -1,141 +1,80 @@
-// Dark-theme-tuned lane colors, cycled per group by order of first appearance.
-// Each lane gets a subtle tinted subgraph background + a brighter node border
-// in the same hue, so groups read as distinct colored regions (like a real
-// architecture diagram) without breaking the black canvas.
-const PALETTE = [
-  { subFill: "#10170f", subStroke: "#2a4a30", nodeFill: "#0f1a10", nodeStroke: "#56d364", text: "#eafbea" },
-  { subFill: "#1a150a", subStroke: "#4a3a1a", nodeFill: "#1a140a", nodeStroke: "#e0ab3c", text: "#fbf0d8" },
-  { subFill: "#0c161c", subStroke: "#1f3a49", nodeFill: "#0b151b", nodeStroke: "#4fa8d8", text: "#dff1fb" },
-  { subFill: "#160f1e", subStroke: "#3a2a52", nodeFill: "#150f1c", nodeStroke: "#a78bfa", text: "#f0eafd" },
-  { subFill: "#1c0f16", subStroke: "#4a2436", nodeFill: "#1b0f15", nodeStroke: "#f472b6", text: "#fde3ee" },
-  { subFill: "#0c1a17", subStroke: "#1f4a3f", nodeFill: "#0b1916", nodeStroke: "#2dd4bf", text: "#e0faf5" },
+// Dark-theme lane colors — shared with the Graph view's PALETTE so both
+// views agree on what a group's color means. Cycled per group by order of
+// first appearance.
+export const PALETTE = [
+  { fill: "#0f1a10", stroke: "#56d364", wash: "rgba(86,211,100,0.12)", text: "#eafbea" },
+  { fill: "#1a140a", stroke: "#e0ab3c", wash: "rgba(224,171,60,0.12)", text: "#fbf0d8" },
+  { fill: "#0b151b", stroke: "#4fa8d8", wash: "rgba(79,168,216,0.12)", text: "#dff1fb" },
+  { fill: "#150f1c", stroke: "#a78bfa", wash: "rgba(167,139,250,0.12)", text: "#f0eafd" },
+  { fill: "#1b0f15", stroke: "#f472b6", wash: "rgba(244,114,182,0.12)", text: "#fde3ee" },
+  { fill: "#0b1916", stroke: "#2dd4bf", wash: "rgba(45,212,191,0.12)", text: "#e0faf5" },
 ];
 
-function escapeLabel(label) {
-  return String(label).replace(/"/g, "'");
+// Mermaid flowchart ids must be alphanumeric/underscore — the server's node
+// ids are already close to that, but sanitize defensively since they're
+// LLM-generated free text in practice.
+function sanitizeId(id) {
+  return "n_" + String(id).replace(/[^a-zA-Z0-9_]/g, "_");
 }
 
-function escapeMarkdownLabel(text) {
-  return String(text).replace(/`/g, "'");
-}
-
-// Mermaid's markdown-string node labels need BOTH the outer quoted-label
-// delimiter AND the backtick markdown marker together — `["` text `"]` —
-// backticks alone (no quotes) render as literal text, not formatting.
+// Mermaid v10+ renders a node label as markdown when wrapped in backticks —
+// that's how a two-line "**Title**<br/>subtitle" label survives without the
+// raw markdown syntax leaking into the rendered text.
 function nodeLabel(node) {
-  const title = escapeMarkdownLabel(node.label || node.path);
-  const detail = node.detail ? escapeMarkdownLabel(node.detail) : "";
-  const body = detail ? `**${title}**\n${detail}` : `**${title}**`;
-  return `"\`${body}\`"`;
+  const title = (node.label || node.id).replace(/`/g, "'");
+  const detail = (node.detail || "").replace(/`/g, "'");
+  const text = detail ? `**${title}**<br/><span style="font-size:11px">${detail}</span>` : `**${title}**`;
+  return `${sanitizeId(node.id)}["\`${text}\`"]`;
 }
 
-function shapeFor(node) {
-  if (node.kind === "dir") return ["[[", "]]"];
-  switch (node.role) {
-    case "entry":
-      return ["([", "])"];
-    case "store":
-      return ["[(", ")]"];
-    case "service":
-      return ["{{", "}}"];
-    default:
-      return ["[", "]"];
-  }
+function edgeLabel(label) {
+  const text = (label || "").replace(/[|"]/g, "").trim();
+  return text ? `-->|${text}|` : "-->";
 }
 
-// Sanitizes an id for Mermaid AND guarantees uniqueness across every id used
-// in the diagram (nodes and subgraphs share one id space in Mermaid — a
-// collision between e.g. a node and a group id is what produces obscure
-// "would create a cycle" render errors, not an actual graph cycle).
-function makeIdRegistry() {
-  const used = new Set();
-  const assigned = new Map(); // original id -> final mermaid id
-
-  return function assign(originalId) {
-    if (assigned.has(originalId)) return assigned.get(originalId);
-    let base = String(originalId).replace(/[^a-zA-Z0-9_]/g, "_") || "n";
-    if (/^[0-9]/.test(base)) base = `n_${base}`;
-    let candidate = base;
-    let i = 1;
-    while (used.has(candidate)) candidate = `${base}_${i++}`;
-    used.add(candidate);
-    assigned.set(originalId, candidate);
-    return candidate;
-  };
-}
-
-// Returns { text, idMap, nodeOrder } — idMap maps each graph node's original
-// id to the exact Mermaid id it was rendered with, so callers can map a
-// clicked SVG element back to the node without re-deriving (and risking
-// drift from) ids. nodeOrder lists mermaid ids in draw order, for staggered
-// reveal animation.
+// Converts the server's {groups, nodes, edges} graph into a mermaid
+// flowchart definition: one subgraph per architectural group, a classDef
+// per group carrying its PALETTE color, and labeled edges between nodes.
 export function graphToMermaid(graph) {
+  const nodes = graph.nodes || [];
+  const edges = graph.edges || [];
+  const groups = graph.groups || [];
+  const nodesById = new Map(nodes.map((n) => [n.id, n]));
+
+  const groupIds = [...new Set(nodes.map((n) => n.group).filter(Boolean))];
+  const groupColorClass = new Map(groupIds.map((id, i) => [id, `grp${i % PALETTE.length}`]));
+  const ungrouped = nodes.filter((n) => !n.group || !groupIds.includes(n.group));
+
   const lines = ["flowchart TD"];
-  const assignId = makeIdRegistry();
-  const idMap = new Map();
-  const nodesById = new Map();
-  const grouped = new Map();
-  const ungrouped = [];
-  const nodeOrder = [];
-  const classDefs = [];
-  const classAssignments = [];
-  const subgraphStyles = [];
 
-  for (const node of graph.nodes || []) {
-    if (!node?.id) continue;
-    nodesById.set(node.id, node);
-    if (node.group) {
-      if (!grouped.has(node.group)) grouped.set(node.group, []);
-      grouped.get(node.group).push(node);
-    } else {
-      ungrouped.push(node);
-    }
-  }
-
-  const groupLabels = new Map((graph.groups || []).map((g) => [g.id, g.label]));
-
-  let colorIndex = 0;
-  for (const [groupId, nodes] of grouped) {
-    if (nodes.length === 0) continue;
-    const color = PALETTE[colorIndex % PALETTE.length];
-    colorIndex++;
-    const className = `lane${colorIndex}`;
-    classDefs.push(`  classDef ${className} fill:${color.nodeFill},stroke:${color.nodeStroke},color:${color.text},stroke-width:1.5px;`);
-
-    const label = groupLabels.get(groupId) || groupId;
-    const subId = assignId(`group:${groupId}`);
-    lines.push(`  subgraph ${subId}["${escapeLabel(label)}"]`);
-    for (const node of nodes) {
-      const mid = assignId(node.id);
-      idMap.set(node.id, mid);
-      nodeOrder.push(mid);
-      const [open, close] = shapeFor(node);
-      lines.push(`    ${mid}${open}${nodeLabel(node)}${close}`);
-      classAssignments.push(`  class ${mid} ${className};`);
-    }
+  for (const groupId of groupIds) {
+    const group = groups.find((g) => g.id === groupId);
+    const groupNodes = nodes.filter((n) => n.group === groupId);
+    if (!groupNodes.length) continue;
+    lines.push(`  subgraph ${sanitizeId(groupId)}["${(group?.label || groupId).replace(/"/g, "'")}"]`);
+    for (const n of groupNodes) lines.push(`    ${nodeLabel(n)}`);
     lines.push("  end");
-    subgraphStyles.push(`  style ${subId} fill:${color.subFill},stroke:${color.subStroke},color:${color.text};`);
+  }
+  for (const n of ungrouped) lines.push(`  ${nodeLabel(n)}`);
+
+  for (const e of edges) {
+    if (!nodesById.has(e.from) || !nodesById.has(e.to)) continue;
+    lines.push(`  ${sanitizeId(e.from)} ${edgeLabel(e.label)} ${sanitizeId(e.to)}`);
   }
 
-  for (const node of ungrouped) {
-    const mid = assignId(node.id);
-    idMap.set(node.id, mid);
-    nodeOrder.push(mid);
-    const [open, close] = shapeFor(node);
-    lines.push(`  ${mid}${open}${nodeLabel(node)}${close}`);
+  for (const groupId of groupIds) {
+    const color = groupColorClass.get(groupId);
+    const palette = PALETTE[groupIds.indexOf(groupId) % PALETTE.length];
+    lines.push(`  classDef ${color} fill:${palette.fill},stroke:${palette.stroke},color:${palette.text},stroke-width:1.5px;`);
+    const groupNodes = nodes.filter((n) => n.group === groupId);
+    if (groupNodes.length) lines.push(`  class ${groupNodes.map((n) => sanitizeId(n.id)).join(",")} ${color};`);
   }
 
-  for (const edge of graph.edges || []) {
-    // Only emit edges between nodes that were actually declared above —
-    // a dangling reference (LLM typo, hallucinated id) would otherwise make
-    // Mermaid implicitly create a stray node, a common source of render
-    // errors once subgraphs are involved.
-    if (!nodesById.has(edge.from) || !nodesById.has(edge.to)) continue;
-    const label = edge.label ? `|"${escapeLabel(edge.label)}"|` : "";
-    lines.push(`  ${idMap.get(edge.from)} -->${label} ${idMap.get(edge.to)}`);
-  }
+  // A stable id -> mermaid-node-id map so the caller can attach click
+  // handlers by looking up which node a clicked SVG element belongs to
+  // (mermaid mangles ids into "flowchart-<id>-<n>" at render time, so
+  // matching is done by checking whether the rendered id CONTAINS this).
+  const idMap = new Map(nodes.map((n) => [sanitizeId(n.id), n]));
 
-  lines.push(...classDefs, ...classAssignments, ...subgraphStyles);
-
-  return { text: lines.join("\n"), idMap, nodeOrder };
+  return { definition: lines.join("\n"), idMap };
 }
