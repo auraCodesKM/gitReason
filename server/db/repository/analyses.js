@@ -33,10 +33,32 @@ export const analysesRepo = {
   },
 
   async listByUser(userId, limit = 50) {
+    // file_tree_json/graph_json are already sitting in these rows — no
+    // schema change needed to surface file/node/relationship counts for
+    // the dashboard, just parse what's already stored. Wrapped per-row so
+    // one malformed/incomplete (e.g. failed) analysis can't break the list.
     const rows = await db
-      .prepare(`SELECT id, repo_full_name, status, created_at FROM analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`)
+      .prepare(
+        `SELECT id, repo_full_name, status, created_at, file_tree_json, graph_json
+         FROM analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`
+      )
       .all(userId, limit);
-    return rows.map((r) => ({ id: r.id, repoFullName: r.repo_full_name, status: r.status, createdAt: r.created_at }));
+    return rows.map((r) => {
+      let fileCount = null;
+      let nodeCount = null;
+      let edgeCount = null;
+      try {
+        if (r.file_tree_json) fileCount = JSON.parse(r.file_tree_json).length;
+        if (r.graph_json) {
+          const graph = JSON.parse(r.graph_json);
+          nodeCount = graph.nodes?.length ?? null;
+          edgeCount = graph.edges?.length ?? null;
+        }
+      } catch {
+        // leave counts null — a malformed row shouldn't break the list
+      }
+      return { id: r.id, repoFullName: r.repo_full_name, status: r.status, createdAt: r.created_at, fileCount, nodeCount, edgeCount };
+    });
   },
 
   async findLatestByUserAndRepo(userId, repoFullName) {

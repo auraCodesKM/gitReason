@@ -3,6 +3,8 @@ import { LogoMark } from "../sections/LogoMark";
 import { apiFetch } from "../lib/api";
 import "./dashboard-page.css";
 
+const RECENT_LIMIT = 5;
+
 function timeAgo(ts) {
   const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
   if (diffSec < 60) return "just now";
@@ -13,6 +15,55 @@ function timeAgo(ts) {
   const diffDay = Math.floor(diffHr / 24);
   if (diffDay < 30) return `${diffDay}d ago`;
   return new Date(ts).toLocaleDateString();
+}
+
+function RepoIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M4 1.5h8.25a.25.25 0 0 1 .25.25v11.5a.25.25 0 0 1-.25.25H4.5a1 1 0 0 1-1-1V2.5a1 1 0 0 1 1-1Z"
+        stroke="currentColor" strokeWidth="1.1"
+      />
+      <path d="M3.5 11.75h9" stroke="currentColor" strokeWidth="1.1" />
+    </svg>
+  );
+}
+
+function AnalysisRow({ item }) {
+  const parts = [];
+  if (item.fileCount != null) parts.push(`${item.fileCount} file${item.fileCount === 1 ? "" : "s"}`);
+  if (item.nodeCount != null) parts.push(`${item.nodeCount} node${item.nodeCount === 1 ? "" : "s"}`);
+  if (item.edgeCount != null) parts.push(`${item.edgeCount} relationship${item.edgeCount === 1 ? "" : "s"}`);
+
+  return (
+    <a href={`/analyze?repo=${encodeURIComponent(item.repoFullName)}&cached=${item.id}`} className="dashboard-row">
+      <span className="dashboard-row-icon"><RepoIcon /></span>
+      <span className="dashboard-row-main">
+        <span className="dashboard-row-top">
+          <span className="dashboard-row-repo">{item.repoFullName}</span>
+          <span className={`dashboard-badge dashboard-badge-${item.status}`}>{item.status}</span>
+        </span>
+        <span className="dashboard-row-sub">
+          Analyzed {timeAgo(item.createdAt)}
+          {parts.length > 0 && <> · {parts.join(" · ")}</>}
+        </span>
+      </span>
+      <span className="dashboard-row-open">Open →</span>
+    </a>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="dashboard-empty-state">
+      <p className="dashboard-empty-title">Your codebase map starts here.</p>
+      <p className="dashboard-empty-copy">
+        Analyze a public GitHub repository to generate its architecture, relationships and
+        interactive codebase graph.
+      </p>
+      <a href="/" className="btn btn-solid dashboard-empty-cta">Analyze a repository</a>
+    </div>
+  );
 }
 
 function GeminiKeySection({ hasKey, onChange }) {
@@ -52,21 +103,14 @@ function GeminiKeySection({ hasKey, onChange }) {
     apiFetch("/api/user/gemini-key", { method: "DELETE" }).then(() => onChange(false));
   }
 
-  return (
-    <div className="dashboard-settings-card">
-      <h2 className="dashboard-section-title">Gemini API key</h2>
-      <p className="dashboard-settings-hint">
-        Use your own Gemini quota for analyses instead of the shared one — get a free key at{" "}
-        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a>.
-      </p>
+  const showForm = editing || !hasKey;
 
-      {hasKey && !editing ? (
-        <div className="dashboard-settings-row">
-          <span className="dashboard-settings-status">✓ Using your own key</span>
-          <button type="button" className="dashboard-settings-link" onClick={() => setEditing(true)}>Replace</button>
-          <button type="button" className="dashboard-settings-link" onClick={remove}>Remove</button>
-        </div>
-      ) : (
+  return (
+    <div className="dashboard-card">
+      <h3 className="dashboard-card-title">AI provider</h3>
+      <p className="dashboard-card-hint">Use your own Gemini API quota for repository analysis.</p>
+
+      {showForm ? (
         <form className="dashboard-settings-row" onSubmit={save}>
           <input
             type="password"
@@ -75,18 +119,27 @@ function GeminiKeySection({ hasKey, onChange }) {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             autoComplete="off"
+            autoFocus={editing}
           />
           <button type="submit" className="btn btn-solid" disabled={status === "saving" || !value.trim()}>
-            {status === "saving" ? "Checking…" : "Save"}
+            {status === "saving" ? "Checking…" : hasKey ? "Update key" : "Add Gemini key"}
           </button>
           {hasKey && (
-            <button type="button" className="dashboard-settings-link" onClick={() => { setEditing(false); setValue(""); setStatus(null); }}>
+            <button type="button" className="dashboard-link" onClick={() => { setEditing(false); setValue(""); setStatus(null); }}>
               Cancel
             </button>
           )}
         </form>
+      ) : (
+        <div className="dashboard-settings-row">
+          <span className="dashboard-key-mask">••••••••••••••••••••••</span>
+          <button type="button" className="btn btn-ghost" onClick={() => setEditing(true)}>Update key</button>
+          <button type="button" className="dashboard-link dashboard-link-destructive" onClick={remove}>Remove</button>
+        </div>
       )}
+
       {status === "error" && <p className="dashboard-settings-error">{errorMsg}</p>}
+      <p className="dashboard-security-hint">Your key is encrypted and never exposed to the client.</p>
     </div>
   );
 }
@@ -95,6 +148,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState(null);
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   useEffect(() => {
     // Landed here straight from a direct "Sign in with GitHub" (no repo
@@ -134,6 +188,7 @@ export default function DashboardPage() {
 
   const distinctRepos = new Set((history || []).map((h) => h.repoFullName)).size;
   const lastActive = history && history.length > 0 ? timeAgo(history[0].createdAt) : "—";
+  const visibleHistory = showAllHistory ? history : (history || []).slice(0, RECENT_LIMIT);
 
   return (
     <div className="dashboard-page">
@@ -145,54 +200,68 @@ export default function DashboardPage() {
         <a href="/" className="dashboard-back">Back to home</a>
       </header>
 
+      <div className="dashboard-glow" aria-hidden="true" />
+
       <div className="dashboard-content">
-        <div className="dashboard-identity">
+        <section className="dashboard-profile">
           {user.avatarUrl && <img src={user.avatarUrl} alt="" className="dashboard-avatar" />}
-          <div>
+          <div className="dashboard-profile-info">
             <h1>{user.username}</h1>
-            <button type="button" className="dashboard-signout" onClick={handleSignOut}>Sign out</button>
+            <p className="dashboard-profile-meta">
+              <span className="dashboard-status-dot" aria-hidden="true" />
+              GitHub connected
+            </p>
           </div>
-        </div>
+          <button type="button" className="dashboard-link dashboard-link-destructive dashboard-signout" onClick={handleSignOut}>
+            Sign out
+          </button>
+        </section>
 
-        <div className="dashboard-stats">
-          <div className="dashboard-stat">
-            <span className="dashboard-stat-value">{history?.length ?? 0}</span>
-            <span className="dashboard-stat-label">Analyses</span>
+        <section>
+          <h2 className="dashboard-section-title">Overview</h2>
+          <div className="dashboard-stats">
+            <div className="dashboard-card dashboard-stat">
+              <span className="dashboard-stat-label">Analyses</span>
+              <span className="dashboard-stat-value">{history?.length ?? 0}</span>
+            </div>
+            <div className="dashboard-card dashboard-stat">
+              <span className="dashboard-stat-label">Repositories</span>
+              <span className="dashboard-stat-value">{distinctRepos}</span>
+            </div>
+            <div className="dashboard-card dashboard-stat">
+              <span className="dashboard-stat-label">Last active</span>
+              <span className="dashboard-stat-value">{lastActive}</span>
+            </div>
           </div>
-          <div className="dashboard-stat">
-            <span className="dashboard-stat-value">{distinctRepos}</span>
-            <span className="dashboard-stat-label">Repositories</span>
-          </div>
-          <div className="dashboard-stat">
-            <span className="dashboard-stat-value">{lastActive}</span>
-            <span className="dashboard-stat-label">Last active</span>
-          </div>
-        </div>
+        </section>
 
-        <GeminiKeySection
-          hasKey={Boolean(user.hasGeminiKey)}
-          onChange={(hasKey) => setUser((u) => ({ ...u, hasGeminiKey: hasKey }))}
-        />
+        <section>
+          <div className="dashboard-section-head">
+            <h2 className="dashboard-section-title">Recent analyses</h2>
+            {history && history.length > RECENT_LIMIT && (
+              <button type="button" className="dashboard-link" onClick={() => setShowAllHistory((v) => !v)}>
+                {showAllHistory ? "Show less" : "View all"}
+              </button>
+            )}
+          </div>
+          {!history || history.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="dashboard-analyses">
+              {visibleHistory.map((item) => (
+                <AnalysisRow key={item.id} item={item} />
+              ))}
+            </div>
+          )}
+        </section>
 
-        <h2 className="dashboard-section-title">History</h2>
-        {!history || history.length === 0 ? (
-          <p className="dashboard-empty">No repositories analyzed yet.</p>
-        ) : (
-          <ul className="dashboard-history">
-            {history.map((item) => (
-              <li key={item.id}>
-                <a
-                  href={`/analyze?repo=${encodeURIComponent(item.repoFullName)}&cached=${item.id}`}
-                  className="dashboard-history-item"
-                >
-                  <span className="dashboard-history-repo">{item.repoFullName}</span>
-                  <span className={`dashboard-history-status status-${item.status}`}>{item.status}</span>
-                  <span className="dashboard-history-time">{timeAgo(item.createdAt)}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
+        <section>
+          <h2 className="dashboard-section-title">Settings</h2>
+          <GeminiKeySection
+            hasKey={Boolean(user.hasGeminiKey)}
+            onChange={(hasKey) => setUser((u) => ({ ...u, hasGeminiKey: hasKey }))}
+          />
+        </section>
       </div>
     </div>
   );
