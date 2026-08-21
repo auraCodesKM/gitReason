@@ -1,0 +1,11 @@
+.dashboard-shell {
+  display: flex;
+  min-height: 100dvh;
+  background: #050505;
+  color: #f2f2f2;
+}
+
+.dashboard-main {
+  flex: 1;
+  min-width: 0;
+}

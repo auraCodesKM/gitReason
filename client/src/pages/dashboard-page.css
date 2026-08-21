@@ -1,189 +1,122 @@
-.dashboard-page {
-  position: relative;
-  min-height: 100dvh;
-  background: #000000;
-  color: #f2f2f2;
-}
+.dashboard-page { min-height: 100dvh; }
 
 .dashboard-loading {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 100dvh;
+  background: #050505;
   color: var(--muted, #9a9a9a);
   font-size: 14px;
 }
 
-/* ---------- header ---------- */
-
-.dashboard-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 32px;
-  border-bottom: 1px solid var(--panel-border, rgba(255, 255, 255, 0.08));
-}
-
-.dashboard-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #fff;
-  font-size: 14.5px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.dashboard-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* ---------- content shell ---------- */
-
-.dashboard-content {
-  max-width: 1140px;
-  margin: 0 auto;
-  padding: 48px 24px 96px;
-}
-
-.dashboard-heading {
-  margin-bottom: 32px;
-  text-align: left;
-}
-
-.dashboard-heading h1 {
-  margin: 0 0 6px;
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: #fff;
-}
-
-.dashboard-heading p {
-  margin: 0;
-  font-size: 13.5px;
-  color: var(--muted, #9a9a9a);
-}
-
-/* ---------- codebase list ---------- */
-
-.codebase-list {
+.dashboard-main-content {
+  max-width: 1280px;
+  padding: 0 32px 64px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 24px;
 }
 
-.codebase-card {
+.dashboard-section { scroll-margin-top: 20px; }
+
+.dashboard-grid-2 {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.dashboard-grid-2 > *:nth-child(2) { animation-delay: 0.06s; }
+/* grid items default to a content-based min-width, which lets a wide
+   child (like the 53-week heatmap) push the whole track wider than the
+   viewport instead of scrolling internally via its own overflow-x. */
+.dashboard-grid-2 > * { min-width: 0; }
+
+/* ---------- shared panel chrome (used by every dashboard widget) ---------- */
+
+.dashboard-panel {
+  padding: 18px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.08));
+  background: var(--panel-bg, #0a0a0a);
+  animation: panel-in 0.35s ease both;
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-panel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 18px;
-  border-radius: 10px;
-  border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.09));
-  background: var(--panel-bg, #0a0a0a);
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-.codebase-card:hover {
-  border-color: var(--panel-border-strong, rgba(255, 255, 255, 0.16));
-  background: var(--panel-bg-raised, #111111);
-}
-
-.codebase-card-main {
-  display: flex;
-  align-items: flex-start;
   gap: 12px;
-  min-width: 0;
+  margin-bottom: 14px;
 }
-
-.codebase-icon {
-  flex-shrink: 0;
-  display: inline-flex;
-  margin-top: 2px;
-  color: var(--muted, #9a9a9a);
-}
-
-.codebase-info { min-width: 0; }
-
-.codebase-name {
-  margin: 0 0 3px;
-  font-size: 14px;
+.dashboard-panel-head h2 {
+  margin: 0;
+  font-size: 13px;
   font-weight: 600;
   color: #f2f2f2;
+}
+
+.panel-head-sub {
+  font-size: 11.5px;
+  color: var(--muted, #9a9a9a);
+  font-family: var(--mono-code, ui-monospace, monospace);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.codebase-owner { color: var(--muted, #9a9a9a); font-weight: 500; }
-
-.codebase-meta {
-  margin: 0 0 2px;
-  font-size: 12px;
-  color: var(--muted, #9a9a9a);
+  max-width: 55%;
 }
 
-.codebase-last {
-  margin: 0;
-  font-size: 11.5px;
-  color: #6a6a6a;
-}
-
-.codebase-actions {
+.panel-head-action {
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.codebase-action {
-  padding: 6px 12px;
-  border-radius: 6px;
+  background: none;
+  border: 0;
+  padding: 0;
   color: var(--muted, #9a9a9a);
-  font-size: 12.5px;
+  font-size: 12px;
   text-decoration: none;
-  white-space: nowrap;
-  transition: color 0.15s ease, background 0.15s ease;
+  cursor: pointer;
+  transition: color 0.15s ease;
 }
-.codebase-action:hover { color: #f2f2f2; background: rgba(255, 255, 255, 0.06); }
+.panel-head-action:hover { color: var(--accent, #56d364); }
 
-.codebase-action-disabled {
-  color: #55555a;
-  cursor: default;
-}
-.codebase-action-disabled:hover { color: #55555a; background: none; }
-
-.codebase-action-primary {
-  color: var(--accent, #56d364);
-  font-weight: 500;
-}
-.codebase-action-primary:hover { color: var(--accent, #56d364); background: var(--accent-wash, rgba(86, 211, 100, 0.1)); }
-
-/* ---------- empty state ---------- */
-
-.dashboard-empty {
-  max-width: 460px;
-  padding: 28px;
-  border-radius: 10px;
-  border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.09));
-  background: var(--panel-bg, #0a0a0a);
+.dashboard-panel-loading,
+.dashboard-panel-empty {
+  margin: 0;
+  padding: 8px 0;
+  font-size: 12.5px;
+  color: var(--muted, #9a9a9a);
 }
 
-.dashboard-empty-title {
-  margin: 0 0 6px;
-  font-size: 15px;
+/* ---------- onboarding (zero-codebase empty state) ---------- */
+
+.dashboard-onboarding {
+  max-width: 440px;
+  margin-top: 48px;
+  padding: 0 32px;
+}
+.dashboard-onboarding h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
   font-weight: 600;
   color: #fff;
 }
-
-.dashboard-empty-copy {
-  margin: 0 0 18px;
-  font-size: 13px;
-  line-height: 1.55;
+.dashboard-onboarding p {
+  margin: 0 0 20px;
+  font-size: 13.5px;
+  line-height: 1.6;
   color: var(--muted, #9a9a9a);
 }
 
-@media (max-width: 640px) {
-  .codebase-card { flex-direction: column; align-items: flex-start; }
-  .codebase-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+@media (max-width: 900px) {
+  .dashboard-main-content { padding: 0 20px 48px; }
+  .dashboard-onboarding { padding: 0 20px; }
+}
+
+@media (max-width: 860px) {
+  .dashboard-grid-2 { grid-template-columns: 1fr; }
 }

@@ -1,0 +1,44 @@
+.recent-analyses-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.recent-analyses-table tr {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.recent-analyses-table tr:hover { background: var(--panel-bg-raised, #111111); }
+.recent-analyses-table td {
+  padding: 9px 6px;
+  border-top: 1px solid var(--panel-border, rgba(255, 255, 255, 0.06));
+  font-size: 12.5px;
+}
+.recent-analyses-table tr:first-child td { border-top: 0; }
+
+.ra-repo {
+  font-family: var(--mono-code, ui-monospace, monospace);
+  color: #d8d8d8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 0;
+  width: 60%;
+}
+
+.ra-status {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.ra-status-complete { color: var(--accent, #56d364); background: var(--accent-wash, rgba(86, 211, 100, 0.1)); }
+.ra-status-failed { color: #ff8f8f; background: rgba(255, 90, 90, 0.1); }
+
+.ra-time {
+  color: #6a6a6a;
+  white-space: nowrap;
+  text-align: right;
+}

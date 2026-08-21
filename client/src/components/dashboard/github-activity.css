@@ -1,0 +1,50 @@
+.range-toggle {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 7px;
+  background: var(--panel-bg-raised, #111111);
+}
+.range-toggle button {
+  border: 0;
+  padding: 4px 9px;
+  border-radius: 5px;
+  background: none;
+  color: var(--muted, #9a9a9a);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.range-toggle button.is-active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.activity-heatmap {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  padding: 4px 0 2px;
+}
+.activity-heatmap-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.activity-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--panel-border, rgba(255, 255, 255, 0.08));
+}
+.activity-level-1 { background: rgba(86, 211, 100, 0.28); }
+.activity-level-2 { background: rgba(86, 211, 100, 0.48); }
+.activity-level-3 { background: rgba(86, 211, 100, 0.68); }
+.activity-level-4 { background: var(--accent, #56d364); }
+
+.github-activity-total {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted, #9a9a9a);
+}

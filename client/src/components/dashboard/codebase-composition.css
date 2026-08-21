@@ -1,0 +1,32 @@
+.composition-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--panel-border, rgba(255, 255, 255, 0.08));
+  margin: 6px 0 14px;
+}
+.composition-seg { height: 100%; }
+
+.composition-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.composition-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+.composition-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.composition-name { color: #d8d8d8; flex: 1; }
+.composition-pct { color: var(--muted, #9a9a9a); font-variant-numeric: tabular-nums; }
