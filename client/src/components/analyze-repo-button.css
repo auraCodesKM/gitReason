@@ -1,0 +1,57 @@
+.analyze-repo-trigger { position: relative; }
+
+.analyze-repo-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: 340px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--panel-border-strong, rgba(255, 255, 255, 0.16));
+  background: rgba(10, 10, 10, 0.98);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.analyze-repo-popover form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 10px 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--panel-border-strong, rgba(255, 255, 255, 0.14));
+  background: var(--panel-bg-raised, #111111);
+}
+.analyze-repo-popover form:focus-within { border-color: var(--accent, #56d364); }
+
+.analyze-repo-prefix {
+  flex-shrink: 0;
+  color: #6a6a6a;
+  font-size: 13px;
+}
+
+.analyze-repo-popover input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: none;
+  color: #f2f2f2;
+  font-size: 13px;
+  outline: none;
+}
+
+.analyze-repo-popover .btn {
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12.5px;
+}
+
+.analyze-repo-error {
+  margin: 8px 2px 0;
+  font-size: 12px;
+  color: #ff8f8f;
+}

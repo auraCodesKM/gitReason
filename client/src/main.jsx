@@ -4,12 +4,14 @@ import App from "./App.jsx";
 import SignPage from "./pages/SignPage.jsx";
 import AnalyzePage from "./pages/AnalyzePage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
+import SettingsPage from "./pages/SettingsPage.jsx";
 import "./App.css";
 
 const routes = {
   "/sign": SignPage,
   "/analyze": AnalyzePage,
   "/dashboard": DashboardPage,
+  "/settings": SettingsPage,
 };
 
 const Page = routes[window.location.pathname] || App;
