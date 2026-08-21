@@ -10,7 +10,15 @@ import {
   handleAuthLogout,
 } from "./auth.js";
 import { handleAnalyzeStream, handleFileContent } from "./analyze.js";
-import { handleUserMe, handleUserHistory, handleUserHistoryItem, handleSetGeminiKey, handleClearGeminiKey } from "./user.js";
+import {
+  handleUserMe,
+  handleUserHistory,
+  handleUserHistoryItem,
+  handleSetGeminiKey,
+  handleClearGeminiKey,
+  handleUserGithubActivity,
+  handleRepoLanguages,
+} from "./user.js";
 
 if (!process.env.SESSION_SECRET) {
   console.error(
@@ -96,6 +104,8 @@ app.get("/api/user/history", handleUserHistory);
 app.get("/api/user/history/:id", handleUserHistoryItem);
 app.post("/api/user/gemini-key", handleSetGeminiKey);
 app.delete("/api/user/gemini-key", handleClearGeminiKey);
+app.get("/api/user/github-activity", handleUserGithubActivity);
+app.get("/api/user/repo-languages", handleRepoLanguages);
 
 if (hasClientBuild) {
   app.use(express.static(clientDist));

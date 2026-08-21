@@ -1,6 +1,7 @@
 import { usersRepo, analysesRepo } from "./db/index.js";
 import { getSession } from "./session.js";
 import { validateGeminiKey } from "./llm.js";
+import { fetchContributionCalendar, fetchRepoLanguages, parseRepoPath } from "./github.js";
 
 export async function handleUserMe(req, res) {
   const session = await getSession(req);
@@ -46,6 +47,37 @@ export async function handleUserHistory(req, res) {
   if (!session) return res.status(401).json({ status: "error", message: "Not signed in." });
 
   res.json({ history: await analysesRepo.listByUser(session.userId) });
+}
+
+// Real GitHub contribution data for the dashboard's activity heatmap.
+// available:false (never fake days) if the calendar can't be fetched -
+// the client must not invent activity to fill the widget.
+export async function handleUserGithubActivity(req, res) {
+  const session = await getSession(req);
+  if (!session) return res.status(401).json({ status: "error", message: "Not signed in." });
+
+  const user = await usersRepo.findById(session.userId);
+  if (!user) return res.status(401).json({ status: "error", message: "Not signed in." });
+
+  const calendar = await fetchContributionCalendar(user.username, session.token).catch(() => null);
+  if (!calendar) return res.json({ available: false });
+
+  res.json({ available: true, ...calendar });
+}
+
+// Per-language byte counts for one repo, used by the dashboard's codebase
+// composition chart. Fetched live rather than stored at analysis time -
+// keeps this separate from the analysis pipeline, per the dashboard being
+// its own read-only view onto GitHub + existing analysis data.
+export async function handleRepoLanguages(req, res) {
+  const session = await getSession(req);
+  if (!session) return res.status(401).json({ status: "error", message: "Not signed in." });
+
+  const parsed = parseRepoPath(req.query.repo);
+  if (!parsed) return res.status(400).json({ status: "invalid" });
+
+  const languages = await fetchRepoLanguages(parsed.owner, parsed.repo, session.token).catch(() => null);
+  res.json({ languages: languages || {} });
 }
 
 export async function handleUserHistoryItem(req, res) {
