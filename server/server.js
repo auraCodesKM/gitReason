@@ -37,18 +37,8 @@ if (process.env.DATABASE_PROVIDER === "turso" && (!process.env.TURSO_DATABASE_UR
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const clientDist = path.join(__dirname, "..", "client", "dist");
 const clientIndexHtml = path.join(clientDist, "index.html");
-// Render only runs this server — no client/dist will exist there, since
-// Vercel builds and serves the frontend separately. Static-serving still
-// works for `npm start`-style combined local previews when the client has
-// been built alongside the server.
 const hasClientBuild = fs.existsSync(clientIndexHtml);
 
-// Split-origin deployment (Vercel frontend, Render backend) makes every
-// browser request genuinely cross-site — CORS must explicitly allow the
-// configured frontend origin with credentials, never a wildcard (browsers
-// reject wildcard + credentials anyway, but being explicit is the point).
-// CLIENT_ORIGIN may be a comma-separated list to allow more than one
-// origin (e.g. a preview deployment alongside production).
 const allowedOrigins = (process.env.CLIENT_ORIGIN || "")
   .split(",")
   .map((s) => s.trim())
@@ -69,15 +59,6 @@ function corsMiddleware(req, res, next) {
   next();
 }
 
-// Express 4 doesn't forward a rejected promise from an async route handler
-// to error middleware on its own — an unguarded await that throws (e.g. a
-// transient Turso network blip) becomes an unhandledRejection, which
-// crashes the whole process by default, taking every user down for one
-// request's failure. Wrapping every handler at registration time catches
-// that without touching any handler's own logic. handleAnalyzeStream is
-// deliberately excluded below - it already has its own complete try/catch
-// tailored to SSE (headers are sent immediately, so a generic JSON 500
-// response after the fact isn't possible there).
 function asyncHandler(fn) {
   return (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
@@ -109,7 +90,7 @@ app.get("/health", async (_req, res) => {
 
 app.get("/api/repo/check", asyncHandler(handleRepoCheck));
 app.get("/api/repo/file", asyncHandler(handleFileContent));
-app.get("/api/analyze/stream", handleAnalyzeStream); // own SSE-safe error handling, not wrapped
+app.get("/api/analyze/stream", handleAnalyzeStream);
 app.get("/api/auth/github/start", asyncHandler(handleAuthStart));
 app.get("/api/auth/github/callback", asyncHandler(handleAuthCallback));
 app.get("/api/auth/session", asyncHandler(handleAuthSession));
@@ -133,24 +114,12 @@ if (hasClientBuild) {
   });
 }
 
-// Catch-all for anything asyncHandler forwarded (or a sync throw Express
-// itself caught) - logs server-side for debugging, never leaks internals
-// (stack traces, error messages) to the client.
 app.use((err, _req, res, _next) => {
   console.error("Unhandled request error:", err?.stack || err?.message || err);
   if (res.headersSent) return;
   res.status(500).json({ status: "error", message: "Something went wrong. Try again." });
 });
 
-// Defense in depth below the per-route asyncHandler wrapping: anything
-// that still slips through (a fire-and-forget promise nothing awaited, a
-// truly synchronous bug outside a request) would otherwise crash the
-// process by Node's default and take every user down with it.
-// unhandledRejection: log and keep serving - it's necessarily tied to one
-// already-failed operation, not a sign the whole process is unsound.
-// uncaughtException: state may genuinely be corrupted at that point: log,
-// then exit so Render's process manager restarts clean, rather than limp
-// on in an unknown state.
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled rejection:", err?.stack || err?.message || err);
 });
@@ -159,9 +128,6 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-// Render (and most hosts) route traffic to the container by port only —
-// binding to 0.0.0.0 rather than the implicit default is required for the
-// health check and external traffic to actually reach the process.
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`GitReason server running on port ${PORT}`);
 });

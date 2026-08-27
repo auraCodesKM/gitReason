@@ -1,10 +1,6 @@
 import { createClient } from "@libsql/client";
 import { SCHEMA_SQL, MIGRATIONS, isDuplicateColumnError } from "./schema.js";
 
-// Turso (libSQL) is wire-compatible SQLite over HTTP — same SQL, same `?`
-// placeholders, genuinely async client. Exposes the identical
-// prepare(sql).run/get/all(...params) shape as sqlite.js so
-// db/repository/*.js never needs to know which provider is live.
 export async function createTursoDb() {
   const url = process.env.TURSO_DATABASE_URL;
   const authToken = process.env.TURSO_AUTH_TOKEN;

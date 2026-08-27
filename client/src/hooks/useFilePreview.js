@@ -15,8 +15,6 @@ function langFor(path) {
   return EXT_LANG[ext] || "text";
 }
 
-// Shared by ArchitectureView's file tree and the Graph view's "Open Source"
-// action — one fetch-and-highlight implementation, two presentations.
 export function useFilePreview(repo, defaultBranch) {
   const [selectedPath, setSelectedPath] = useState(null);
   const [fileHtml, setFileHtml] = useState("");

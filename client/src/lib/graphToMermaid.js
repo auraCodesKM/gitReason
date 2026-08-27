@@ -1,6 +1,3 @@
-// Dark-theme lane colors — shared with the Graph view's PALETTE so both
-// views agree on what a group's color means. Cycled per group by order of
-// first appearance.
 export const PALETTE = [
   { fill: "#0f1a10", stroke: "#56d364", wash: "rgba(86,211,100,0.12)", text: "#eafbea" },
   { fill: "#1a140a", stroke: "#e0ab3c", wash: "rgba(224,171,60,0.12)", text: "#fbf0d8" },
@@ -10,16 +7,10 @@ export const PALETTE = [
   { fill: "#0b1916", stroke: "#2dd4bf", wash: "rgba(45,212,191,0.12)", text: "#e0faf5" },
 ];
 
-// Mermaid flowchart ids must be alphanumeric/underscore — the server's node
-// ids are already close to that, but sanitize defensively since they're
-// LLM-generated free text in practice.
 function sanitizeId(id) {
   return "n_" + String(id).replace(/[^a-zA-Z0-9_]/g, "_");
 }
 
-// Mermaid v10+ renders a node label as markdown when wrapped in backticks —
-// that's how a two-line "**Title**<br/>subtitle" label survives without the
-// raw markdown syntax leaking into the rendered text.
 function nodeLabel(node) {
   const title = (node.label || node.id).replace(/`/g, "'");
   const detail = (node.detail || "").replace(/`/g, "'");
@@ -32,9 +23,6 @@ function edgeLabel(label) {
   return text ? `-->|${text}|` : "-->";
 }
 
-// Converts the server's {groups, nodes, edges} graph into a mermaid
-// flowchart definition: one subgraph per architectural group, a classDef
-// per group carrying its PALETTE color, and labeled edges between nodes.
 export function graphToMermaid(graph) {
   const nodes = graph.nodes || [];
   const edges = graph.edges || [];
@@ -70,10 +58,6 @@ export function graphToMermaid(graph) {
     if (groupNodes.length) lines.push(`  class ${groupNodes.map((n) => sanitizeId(n.id)).join(",")} ${color};`);
   }
 
-  // A stable id -> mermaid-node-id map so the caller can attach click
-  // handlers by looking up which node a clicked SVG element belongs to
-  // (mermaid mangles ids into "flowchart-<id>-<n>" at render time, so
-  // matching is done by checking whether the rendered id CONTAINS this).
   const idMap = new Map(nodes.map((n) => [sanitizeId(n.id), n]));
 
   return { definition: lines.join("\n"), idMap };

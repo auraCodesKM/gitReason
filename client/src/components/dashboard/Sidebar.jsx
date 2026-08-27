@@ -18,9 +18,6 @@ const SECTIONS = [
   { id: "codebases", label: "Codebases", icon: FolderGit },
 ];
 
-// page: "dashboard" (default) tracks scroll position within the current
-// page's own #id sections; any other page (e.g. "settings") just links
-// back to those sections on /dashboard instead of scroll-spying itself.
 export function Sidebar({ open, onClose, onToggle, hasContent, page = "dashboard" }) {
   const [active, setActive] = useState("overview");
   const onDashboard = page === "dashboard";
@@ -28,11 +25,9 @@ export function Sidebar({ open, onClose, onToggle, hasContent, page = "dashboard
   useEffect(() => {
     if (!onDashboard || !hasContent) return;
     const ids = SECTIONS.map((s) => s.id);
-    const LINE = 140; // px from the top of the viewport
+    const LINE = 140;
 
     function onScroll() {
-      // the active section is whichever one's top has most recently
-      // scrolled past LINE - falls back to the first section at page top
       let current = ids[0];
       for (const id of ids) {
         const el = document.getElementById(id);
@@ -46,10 +41,6 @@ export function Sidebar({ open, onClose, onToggle, hasContent, page = "dashboard
     return () => window.removeEventListener("scroll", onScroll);
   }, [onDashboard, hasContent]);
 
-  // Navigating via a link should close the mobile overlay drawer (its job
-  // is to get out of the way), but leave the desktop sidebar exactly as
-  // the user left it - collapsing it on every click there would be
-  // surprising, not helpful.
   function closeIfMobile() {
     if (window.matchMedia("(max-width: 900px)").matches) onClose();
   }

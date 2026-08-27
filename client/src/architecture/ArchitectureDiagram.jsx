@@ -15,10 +15,6 @@ let renderCount = 0;
 
 const REDUCED_MOTION = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-// Staggers a fade-in over the already-laid-out SVG. Mermaid positions every
-// node/edge via an SVG transform="translate(...)" attribute — a CSS
-// transform on top of that REPLACES it instead of composing, so the reveal
-// is opacity-only, never transform-based.
 function revealDiagram(container) {
   const groups = [...container.querySelectorAll(".node, .cluster")];
   const edges = [...container.querySelectorAll(".edgePath, .edgeLabel")];

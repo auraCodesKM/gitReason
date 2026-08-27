@@ -1,9 +1,6 @@
 const HOPS = [1, 2, 3, Infinity];
 const HOP_LABEL = { 1: "1", 2: "2", 3: "3", Infinity: "All" };
 
-// Minimal floating depth control — no toolbar, no labels beyond the pill
-// itself. Only meaningful once something is selected, but stays visible so
-// the default (2 hops) is discoverable before a first click.
 export function GraphHopControl({ hopDepth, onHopDepthChange, onFitToScreen }) {
   return (
     <div className="graph-hop-pill">

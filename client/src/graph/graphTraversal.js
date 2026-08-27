@@ -1,7 +1,3 @@
-// d3-force mutates link.source/target from id strings into live node object
-// references once the simulation initializes — callers hand this both the
-// original model.links (still strings) and simLinks post-init (objects), so
-// the key must normalize either form to the same string.
 function endpointId(v) {
   return typeof v === "object" && v !== null ? v.id : v;
 }
@@ -10,9 +6,6 @@ function edgeKey(edge) {
   return `${endpointId(edge.source)} ${endpointId(edge.target)}`;
 }
 
-// Local Graph: hop distance is UNDIRECTED — reaching a node via an incoming
-// OR outgoing edge both count as 1 hop. This is the core distinction from
-// Blast Radius below, which is direction-aware and unbounded.
 export function bfsLocalGraph(adjacency, rootId, maxDepth) {
   const dist = new Map([[rootId, 0]]);
   const traversedEdgeKeys = new Set();
@@ -37,12 +30,6 @@ export function bfsLocalGraph(adjacency, rootId, maxDepth) {
   return { hopById: dist, traversedEdgeKeys };
 }
 
-// Blast Radius: deliberately unbounded (no hop cap) and direction-aware.
-// Edge {from, to, label} reads "from <label>s to", so:
-//   downstream (dependencies) = transitive closure over OUTGOING edges —
-//     everything this file itself relies on.
-//   upstream (dependents)     = transitive closure over INCOMING edges —
-//     everything that would be affected if this file changed.
 export function blastRadius(adjacency, rootId) {
   function closure(direction) {
     const visited = new Set([rootId]);

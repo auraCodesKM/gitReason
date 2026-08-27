@@ -24,9 +24,6 @@ function authHeaders(token, extra = {}) {
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   } else if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-    // Unauthenticated public-repo checks are capped at 60 req/hr per IP.
-    // The OAuth app's own credentials raise that to 5000/hr (still just
-    // reading public data — no user token involved).
     const basic = Buffer.from(
       `${process.env.GITHUB_CLIENT_ID}:${process.env.GITHUB_CLIENT_SECRET}`
     ).toString("base64");
@@ -92,7 +89,6 @@ export async function fetchReadme(owner, repo, token) {
 
 export async function fetchFileContent(owner, repo, filePath, ref, token) {
   if (!token) {
-    // Public repos: raw.githubusercontent.com costs nothing against the API rate limit.
     const res = await fetch(
       `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(ref)}/${filePath}`
     );
@@ -100,7 +96,6 @@ export async function fetchFileContent(owner, repo, filePath, ref, token) {
     return res.text();
   }
 
-  // Private repos need the authenticated contents API.
   const res = await fetch(
     `${GITHUB_API}/repos/${owner}/${repo}/contents/${filePath}?ref=${encodeURIComponent(ref)}`,
     { headers: authHeaders(token, { Accept: "application/vnd.github.raw+json" }) }
@@ -109,10 +104,6 @@ export async function fetchFileContent(owner, repo, filePath, ref, token) {
   return res.text();
 }
 
-// The dashboard's GitHub activity heatmap: GitHub's own contribution
-// calendar, via the GraphQL API (the REST API has no equivalent endpoint).
-// Works with a plain "repo"-scope OAuth token — no extra scope needed,
-// since this only reads the authenticated user's own public calendar data.
 export async function fetchContributionCalendar(username, token) {
   const now = new Date();
   const from = new Date(now.getTime() - 371 * 24 * 60 * 60 * 1000).toISOString();
@@ -152,8 +143,6 @@ export async function fetchContributionCalendar(username, token) {
   };
 }
 
-// Bytes-per-language for one repo, straight from GitHub's own detector —
-// used for the dashboard's codebase composition chart.
 export async function fetchRepoLanguages(owner, repo, token) {
   const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/languages`, { headers: authHeaders(token) });
   if (!res.ok) return null;

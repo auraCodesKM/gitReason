@@ -34,10 +34,6 @@ export const analysesRepo = {
   },
 
   async listByUser(userId, limit = 50) {
-    // file_tree_json/graph_json are already sitting in these rows — no
-    // schema change needed to surface file/node/relationship counts for
-    // the dashboard, just parse what's already stored. Wrapped per-row so
-    // one malformed/incomplete (e.g. failed) analysis can't break the list.
     const rows = await db
       .prepare(
         `SELECT id, repo_full_name, status, created_at, file_tree_json, graph_json, language
@@ -56,7 +52,7 @@ export const analysesRepo = {
           edgeCount = graph.edges?.length ?? null;
         }
       } catch {
-        // leave counts null — a malformed row shouldn't break the list
+        // counts stay null
       }
       return {
         id: r.id, repoFullName: r.repo_full_name, status: r.status, createdAt: r.created_at,

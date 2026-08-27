@@ -15,8 +15,6 @@ function prune(map, ttl) {
 }
 
 function clientOrigin() {
-  // CLIENT_ORIGIN may be a comma-separated list (server.js uses all of them
-  // for CORS) — the OAuth redirect needs exactly one, so use the first.
   return (process.env.CLIENT_ORIGIN || "").split(",")[0].trim();
 }
 
@@ -63,10 +61,6 @@ export function handleAuthStart(req, res) {
   const env = requireGithubEnv(res);
   if (!env) return;
 
-  // repo is optional — a direct "Sign in with GitHub" (no repo picked yet)
-  // just authenticates and lands on /dashboard. When present it must still
-  // be a valid owner/repo, so a malformed query string fails loudly rather
-  // than silently signing in for the wrong reason.
   let repoFullName = null;
   if (req.query.repo) {
     const parsed = parseRepoPath(req.query.repo);
@@ -133,8 +127,6 @@ export async function handleAuthCallback(req, res) {
     return signError("token_exchange_failed", pending.repo);
   }
 
-  // Only check repo access when the user actually came here to analyze a
-  // specific one — a plain sign-in has nothing to check access to yet.
   let githubUser;
   try {
     if (pending.repo) {

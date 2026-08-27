@@ -8,15 +8,11 @@ function isDesktop() {
 }
 
 function initialOpen() {
-  if (!isDesktop()) return false; // mobile: drawer starts closed
+  if (!isDesktop()) return false;
   const stored = localStorage.getItem(STORAGE_KEY);
-  return stored === null ? true : stored === "1"; // desktop: visible unless the user collapsed it last time
+  return stored === null ? true : stored === "1";
 }
 
-// Same open/closed boolean drives two different interactions depending on
-// viewport: a mobile overlay drawer (never persisted - always starts
-// closed) and a desktop sidebar that slides its own width in/out (persisted
-// across visits, since collapsing it there is a real space preference).
 export function useSidebarOpen() {
   const [open, setOpen] = useState(initialOpen);
 

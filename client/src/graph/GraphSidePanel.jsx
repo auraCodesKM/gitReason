@@ -2,10 +2,6 @@ import { colorFor, connectionCount } from "./graphData";
 
 const ROLE_LABEL = { entry: "Entry point", service: "Service", store: "Data store", default: "Component" };
 
-// A compact floating card, not a permanent sidebar — mounted only while a
-// node is selected, positioned over the canvas. "Open Source" swaps the
-// same card into a source view rather than opening a whole new layout
-// column; "back" returns to the info view.
 export function GraphSidePanel({
   node, model, mode, blastStats, sourceOpen, fileHtml, fileLoading,
   onJumpTo, onOpenSource, onBackToInfo, onShowLocalGraph, onShowBlastRadius, onClose, onViewInArchitecture,

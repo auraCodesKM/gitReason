@@ -103,8 +103,6 @@ export async function handleAnalyzeStream(req, res) {
   });
   const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 
-  // If the browser navigates away or closes the tab mid-analysis, abort the
-  // in-flight LLM call instead of paying for a response no one reads.
   const abortController = new AbortController();
   req.on("close", () => abortController.abort());
 
@@ -117,16 +115,8 @@ export async function handleAnalyzeStream(req, res) {
 
     const session = await getSession(req);
     const token = session?.token;
-    // Bring-your-own-key: a signed-in user's own Gemini key (if they've set
-    // one) is used for their analyses instead of the shared server key.
     const geminiKey = session?.userId ? await usersRepo.getGeminiKey(session.userId) : null;
 
-    // The shared server key is only for the anonymous "try a public repo"
-    // flow on the landing page — structurally that's the only thing an
-    // unauthenticated request can ever reach anyway, since fetchRepo below
-    // requires a token for anything private. Once signed in, every
-    // analysis (public or private repo) must run on the user's own key —
-    // never silently falling back to shared quota.
     if (session?.userId && !geminiKey) {
       send("error", { message: "gemini_key_required" });
       return res.end();
@@ -206,7 +196,7 @@ export async function handleAnalyzeStream(req, res) {
         graph = candidate;
         break;
       }
-      graph = repairGraph(candidate, realPaths); // fallback if this is the last attempt
+      graph = repairGraph(candidate, realPaths);
     }
 
     if (!graph || graph.nodes.length === 0) {

@@ -50,9 +50,6 @@ export default function SignPage() {
   }, []);
 
   const trimmed = repoValue.trim();
-  // A repo is optional — leaving it blank just signs in and lands on the
-  // dashboard. Typing something disables the button until it's a real
-  // owner/repo, so a half-typed value can't be submitted by mistake.
   const canContinue = trimmed === "" || isValidRepoPath(trimmed);
 
   function handleContinue(e) {

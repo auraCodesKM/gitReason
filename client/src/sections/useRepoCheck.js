@@ -2,7 +2,7 @@ import { useState } from "react";
 import { apiFetch } from "../lib/api";
 
 export function useRepoCheck() {
-  const [repoStatus, setRepoStatus] = useState(null); // 'checking' | 'invalid' | 'not_found' | 'error' | 'rate_limited'
+  const [repoStatus, setRepoStatus] = useState(null);
 
   async function checkRepo(rawInput) {
     setRepoStatus("checking");
@@ -23,7 +23,7 @@ export function useRepoCheck() {
       if (data.status === "not_found") setRepoStatus("not_found");
       else if (data.status === "invalid") setRepoStatus("invalid");
       else if (data.status === "rate_limited") setRepoStatus("rate_limited");
-      else setRepoStatus("error"); // server-side error (e.g. GitHub unreachable) is not a bad input
+      else setRepoStatus("error");
     } catch {
       setRepoStatus("error");
     }
@@ -33,8 +33,6 @@ export function useRepoCheck() {
     setRepoStatus(null);
   }
 
-  // clears a stale invalid/not_found/error message once the user edits the
-  // text again, so the old error doesn't linger next to newly-typed input
   function clearStaleError() {
     setRepoStatus((s) => (s === "checking" ? s : null));
   }

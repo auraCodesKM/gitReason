@@ -8,9 +8,6 @@ const MINI_W = 120;
 const MINI_H = 78;
 const PAD = 8;
 
-// Mirrors the main simulation's node array by shared reference — no
-// independent physics, just a cheap coordinate-transform projection,
-// refreshed on the same tick/reveal cadence as the main canvas.
 export function GraphMinimap({ simRef, zoomApiRef, svgRef, ready, groupColor }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
@@ -51,7 +48,6 @@ export function GraphMinimap({ simRef, zoomApiRef, svgRef, ready, groupColor }) 
       const rect = svgRef.current.getBoundingClientRect();
       const proj = projRef.current;
       if (!proj || !rectRef.current) return;
-      // visible graph-space bounds = inverse of the current zoom transform
       const x0 = -t.x / t.k, y0 = -t.y / t.k;
       const x1 = (rect.width - t.x) / t.k, y1 = (rect.height - t.y) / t.k;
       const [px0, py0] = proj.project(x0, y0);
@@ -65,7 +61,7 @@ export function GraphMinimap({ simRef, zoomApiRef, svgRef, ready, groupColor }) 
     syncViewport();
     const svgSel = select(svgRef.current);
     svgSel.on("zoom.minimap", syncViewport);
-    const interval = setInterval(syncViewport, 400); // catches drag-driven resettles cheaply
+    const interval = setInterval(syncViewport, 400);
 
     function toGraphSpace(px, py) {
       const proj = projRef.current;

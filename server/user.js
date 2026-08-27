@@ -16,10 +16,6 @@ export async function handleUserMe(req, res) {
   });
 }
 
-// Bring-your-own-key: the plaintext key is accepted here, validated with a
-// zero-cost auth check against Gemini, encrypted at rest, and never sent
-// back in any response — not here, not from handleUserMe, nowhere. Only
-// analyze.js ever decrypts it, server-side, to make the actual LLM call.
 export async function handleSetGeminiKey(req, res) {
   const session = await getSession(req);
   if (!session) return res.status(401).json({ status: "error", message: "Not signed in." });
@@ -49,9 +45,6 @@ export async function handleUserHistory(req, res) {
   res.json({ history: await analysesRepo.listByUser(session.userId) });
 }
 
-// Real GitHub contribution data for the dashboard's activity heatmap.
-// available:false (never fake days) if the calendar can't be fetched -
-// the client must not invent activity to fill the widget.
 export async function handleUserGithubActivity(req, res) {
   const session = await getSession(req);
   if (!session) return res.status(401).json({ status: "error", message: "Not signed in." });
@@ -65,10 +58,6 @@ export async function handleUserGithubActivity(req, res) {
   res.json({ available: true, ...calendar });
 }
 
-// Per-language byte counts for one repo, used by the dashboard's codebase
-// composition chart. Fetched live rather than stored at analysis time -
-// keeps this separate from the analysis pipeline, per the dashboard being
-// its own read-only view onto GitHub + existing analysis data.
 export async function handleRepoLanguages(req, res) {
   const session = await getSession(req);
   if (!session) return res.status(401).json({ status: "error", message: "Not signed in." });

@@ -17,8 +17,6 @@ import { SquareSnake } from "../components/SquareSnake";
 import { useSidebarOpen } from "../hooks/useSidebarOpen";
 import "./dashboard-page.css";
 
-// history is already sorted DESC by createdAt - the first occurrence of
-// each repo in that order is its most recent analysis.
 function dedupeLatest(history) {
   const out = [];
   const seen = new Set();
@@ -30,8 +28,6 @@ function dedupeLatest(history) {
   return out;
 }
 
-// An item is a first-time "Analyzed" if no older entry shares its repo;
-// otherwise it's a "Re-analyzed" of something already known.
 function buildActivityFeed(history) {
   const oldestIdByRepo = new Map();
   for (let i = history.length - 1; i >= 0; i--) {
@@ -50,7 +46,7 @@ export default function DashboardPage() {
   const [activity, setActivity] = useState(null);
   const [latestDetail, setLatestDetail] = useState(null);
   const [languages, setLanguages] = useState(null);
-  const [selectedRepo, setSelectedRepo] = useState(null); // repoFullName or "__all__"
+  const [selectedRepo, setSelectedRepo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useSidebarOpen();
 
@@ -98,9 +94,6 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latest?.id]);
 
-  // The composition chart's own repo selector defaults to the most recent
-  // codebase once it's known, but only sets it once - it shouldn't fight a
-  // choice the user already made if this list re-renders.
   useEffect(() => {
     if (latest && !selectedRepo) setSelectedRepo(latest.repoFullName);
   }, [latest, selectedRepo]);

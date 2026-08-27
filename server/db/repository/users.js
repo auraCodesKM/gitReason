@@ -18,11 +18,6 @@ export const usersRepo = {
     return (await db.prepare(`SELECT * FROM users WHERE id = ?`).get(id)) || null;
   },
 
-  // Bring-your-own-key: lets a signed-in user use their own Gemini quota
-  // instead of the shared server key. Encrypted at rest with the same
-  // AES-256-GCM scheme as GitHub tokens; the plaintext key is never
-  // returned from here or from any HTTP handler, only used server-side to
-  // call the Gemini API.
   async setGeminiKey(userId, plaintextKey) {
     await db.prepare(`UPDATE users SET gemini_key_enc = ? WHERE id = ?`).run(encrypt(plaintextKey), userId);
   },

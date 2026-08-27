@@ -37,8 +37,6 @@ export default function AnalyzePage() {
   const [graph, setGraph] = useState(null);
   const [repo, setRepo] = useState("");
   const [defaultBranch, setDefaultBranch] = useState("main");
-  // Lets the dashboard's "Graph" action deep-link straight into that tab
-  // instead of always landing on Architecture first.
   const [view, setView] = useState(
     () => (new URLSearchParams(window.location.search).get("view") === "graph" ? "graph" : "architecture")
   );

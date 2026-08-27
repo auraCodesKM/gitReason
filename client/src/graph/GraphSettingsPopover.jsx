@@ -7,22 +7,14 @@ function togglePill(active, all, value) {
   const next = new Set(current);
   if (next.has(value)) next.delete(value);
   else next.add(value);
-  // Every option selected is equivalent to "no filter" — keep state minimal.
   return next.size === all.length ? null : next;
 }
 
-// Relationship filtering answers "where does X occur in my codebase?" —
-// clicking one relationship should ISOLATE it (show only "queries" edges),
-// not toggle it out of an all-active set. Click the same one again to
-// restore "show everything".
 function isolatePill(active, value) {
   if (active && active.size === 1 && active.has(value)) return null;
   return new Set([value]);
 }
 
-// Everything that would otherwise be a permanent row of pills lives here
-// instead, behind a single gear icon — group colors, role/group/relationship
-// filters. Advanced, not ambient.
 export function GraphSettingsPopover({
   model, activeRoles, onRolesChange, activeGroups, onGroupsChange, activeRelLabels, onRelLabelsChange,
 }) {

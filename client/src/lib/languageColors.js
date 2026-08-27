@@ -1,5 +1,3 @@
-// GitHub's own linguist colors - real, widely-recognized convention (the
-// same colors shown on any GitHub repo's language bar), not invented.
 const LANGUAGE_COLORS = {
   JavaScript: "#f1e05a",
   TypeScript: "#3178c6",

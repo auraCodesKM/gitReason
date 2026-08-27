@@ -16,10 +16,6 @@ function score(query, node) {
   return i === q.length ? 20 : -1;
 }
 
-// A first-class search+command surface (Cmd/Ctrl+K) — the corner pill is
-// just the discoverability hint; this centered palette is where users
-// actually search. Node results and graph-level commands share one list
-// so search and "do a thing" never feel like two separate features.
 export function GraphCommandPalette({ nodes, commands, onSelectNode, onClose, onQueryChange }) {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);

@@ -10,9 +10,6 @@ const ERROR_COPY = {
   rate_limited: "GitHub rate limit reached. Try again shortly.",
 };
 
-// The dashboard's own repository-analysis entry point — same check/auth/
-// navigate logic the landing page uses (useRepoCheck), just surfaced as a
-// small popover instead of bouncing out to the marketing page first.
 export function AnalyzeRepoButton({ className = "", label = "+ Analyze repository", autoOpen = false }) {
   const [open, setOpen] = useState(autoOpen);
   const [value, setValue] = useState("");

@@ -1,8 +1,4 @@
 const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta";
-// flash-lite: same 1M context as flash, no extended internal "thinking" tokens
-// burned per call, and a far higher free-tier daily request quota — plain
-// flash's free tier caps at only 20 requests/day, nowhere near enough for
-// real use (each analysis costs 2-4 calls).
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 
 export async function llmComplete(prompt, { system, format, signal, apiKey } = {}) {
@@ -35,9 +31,6 @@ export async function llmComplete(prompt, { system, format, signal, apiKey } = {
   return text;
 }
 
-// Cheap auth check (lists models, no generation cost) so a user pasting
-// their own key gets immediate "this doesn't work" feedback at save time
-// rather than discovering it mid-analysis.
 export async function validateGeminiKey(apiKey) {
   try {
     const res = await fetch(`${GEMINI_API}/models?pageSize=1`, {

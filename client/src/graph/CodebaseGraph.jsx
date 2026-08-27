@@ -26,11 +26,6 @@ function easeOutCubic(t) {
   return 1 - Math.pow(1 - t, 3);
 }
 
-// The Graph view — a minimal, full-bleed Obsidian-style exploration surface.
-// LESS UI, MORE GRAPH: no permanent toolbar, no rows of filter pills, no
-// oversized legend or minimap. Just the canvas, a couple of small floating
-// controls, and a compact panel that only appears once something is
-// selected. Advanced filters live behind a single settings icon.
 export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, onFocusApplied, onViewInArchitecture }) {
   const model = useMemo(() => buildGraphModel(graph), [graph]);
   const { fileHtml, fileLoading, openFile } = useFilePreview(repo, defaultBranch);
@@ -40,24 +35,23 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
   const zoomGroupRef = useRef(null);
   const nodeElsRef = useRef(new Map());
   const edgeElsRef = useRef(new Map());
-  const simRef = useRef(null); // { simNodes, simLinks, simulation, nodesById }
+  const simRef = useRef(null);
   const zoomApiRef = useRef(null);
   const revealedRef = useRef(false);
 
   const [ready, setReady] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [hoveredNodeId, setHoveredNodeId] = useState(null);
-  const [hoverTooltip, setHoverTooltip] = useState(null); // { nodeId, x, y }
-  const [mode, setMode] = useState("local"); // "local" | "blast"
-  const [hopDepth, setHopDepth] = useState(2); // 1 | 2 | 3 | Infinity
-  const [activeRoles, setActiveRoles] = useState(null); // null = all active
+  const [hoverTooltip, setHoverTooltip] = useState(null);
+  const [mode, setMode] = useState("local");
+  const [hopDepth, setHopDepth] = useState(2);
+  const [activeRoles, setActiveRoles] = useState(null);
   const [activeGroups, setActiveGroups] = useState(null);
   const [activeRelLabels, setActiveRelLabels] = useState(null);
   const [searchMatchIds, setSearchMatchIds] = useState(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [sourceOpen, setSourceOpen] = useState(false);
 
-  // ---- build + settle simulation, run the staged reveal, wire zoom/drag ----
   useLayoutEffect(() => {
     const container = containerRef.current;
     const svg = svgRef.current;
@@ -97,14 +91,11 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
       if (el) el.setAttribute("transform", `translate(${node.x},${node.y})`);
     }
 
-    // Live tick handler — only ever active after the reveal, and only
-    // matters again once a drag reheats the simulation.
     simulation.on("tick", () => {
       simNodes.forEach(writeNodeTransform);
       simLinks.forEach(writeEdgePath);
     });
 
-    // Stagger order: group-by-group, then by node within a group.
     const order = [...simNodes].sort((a, b) => {
       const ga = model.groupIds.indexOf(a.group);
       const gb = model.groupIds.indexOf(b.group);
@@ -112,19 +103,11 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
     });
     const delayFor = new Map(order.map((n, i) => [n.id, i * REVEAL_STAGGER]));
 
-    // Stage starting positions (group centroid) and paint the very first
-    // frame before the browser has a chance to show settled "final" values
-    // without animation — the codebase should feel like it's revealing
-    // itself, not popping in already-assembled.
     for (const n of simNodes) {
       const start = centroidFor(n);
       n.__start = start;
       writeNodeTransform({ ...n, x: start.x, y: start.y });
     }
-    // Spread each endpoint (preserving .id, so the edge-key lookup inside
-    // writeEdgePath still resolves) while overriding x/y to the staged
-    // start — edges begin collapsed at each node's own reveal origin, not
-    // the settled position the source node hasn't animated to yet.
     simLinks.forEach((l) =>
       writeEdgePath({
         source: { ...l.source, x: l.source.__start.x, y: l.source.__start.y },
@@ -161,9 +144,6 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
         simLinks.forEach((l) => {
           const s = nodesById.get(typeof l.source === "object" ? l.source.id : l.source);
           const t = nodesById.get(typeof l.target === "object" ? l.target.id : l.target);
-          // Preserve .id on each endpoint (spread over the interpolated
-          // {x,y}) so writeEdgePath's edge-key lookup still resolves —
-          // currentPos() alone returns bare coordinates with no identity.
           writeEdgePath({ source: { ...s, ...currentPos(s, delayFor, elapsed) }, target: { ...t, ...currentPos(t, delayFor, elapsed) } });
         });
         if (elapsed < totalDuration) raf = requestAnimationFrame(step);
@@ -180,22 +160,12 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
     }
 
     function wireDrag() {
-      // d3-drag needs a bound datum per element — bind each simNode to its
-      // already-rendered DOM element via the id map (React never data-binds
-      // for d3, so this has to happen imperatively here, once, post-reveal).
       nodeElsRef.current.forEach((el, id) => {
         const n = nodesById.get(id);
         select(el)
           .datum(n)
           .call(
             d3drag()
-              // Without an explicit container, d3-drag reports event.x/y
-              // relative to the dragged <g> itself (which has its own
-              // translate(x,y) — a circularly-shifting, meaningless space).
-              // The zoom group is the untransformed graph-space root, so
-              // event.x/y there land in the same coordinate space as
-              // d.x/d.y/d.fx/d.fy, correctly accounting for the current
-              // pan/zoom too.
               .container(zoomGroup)
               .on("start", (_event, d) => {
                 d.__dragStartX = d.x;
@@ -210,11 +180,6 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
               })
               .on("end", (_event, d) => {
                 simulation.alphaTarget(0);
-                // Stays pinned after drag (deliberate manual arrangement).
-                // d3-drag owns mousedown on this element, which unreliably
-                // suppresses the browser's native dblclick — so release is
-                // detected here instead: two near-zero-movement gestures
-                // (clicks) within 350ms count as a double-click and unpin.
                 const dx = (d.fx ?? d.x) - d.__dragStartX;
                 const dy = (d.fy ?? d.y) - d.__dragStartY;
                 const now = performance.now();
@@ -237,17 +202,10 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
       simulation.stop();
       zoomApi.destroy();
       if (typeof cancelReveal === "function") cancelReveal();
-      // Not clearing nodeElsRef/edgeElsRef here: under StrictMode's
-      // synchronous double-invoke this cleanup runs before the next effect's
-      // ref callbacks get a chance to refire (that only happens on an actual
-      // render pass), so clearing left the maps empty for the surviving run.
-      // The maps are keyed by stable node/edge id and don't need wiping
-      // between re-invokes of the same mounted component.
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model]);
 
-  // ---- selection / mode derived highlight sets ----
   const highlight = useMemo(() => {
     if (!selectedNodeId) return null;
     if (mode === "blast") {
@@ -268,7 +226,6 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
     return hidden;
   }, [model.nodes, activeRoles, activeGroups]);
 
-  // ---- apply data-state to the DOM (cheap: click/hover/filter frequency, never tick frequency) ----
   useEffect(() => {
     if (!ready) return;
     for (const node of model.nodes) {
@@ -332,10 +289,6 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
     setSelectedNodeId(id);
   }
 
-  // Cross-navigation from Architecture's "Explore in Graph →" — focus the
-  // node matching that file path once the graph has settled and is ready
-  // to be zoomed/selected, then tell the parent the one-shot request was
-  // consumed so switching tabs again doesn't re-trigger it.
   useEffect(() => {
     if (!focusPath || !ready) return;
     const match = model.nodes.find((n) => n.path === focusPath);
@@ -364,8 +317,6 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
     setSearchMatchIds(null);
   }
 
-  // Cmd/Ctrl+K opens the command palette; Escape closes whatever's on top
-  // (palette first, then selection) rather than both firing at once.
   useEffect(() => {
     function onKeyDown(e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -403,9 +354,6 @@ export default function CodebaseGraph({ graph, repo, defaultBranch, focusPath, o
         onClick={(e) => { if (e.target === svgRef.current) clearSelection(); }}
       >
         <defs>
-          {/* Directional arrows appear only on highlighted edges (traversed
-              local-graph paths, blast-radius up/downstream) — idle edges stay
-              arrow-less so the graph doesn't read as visually noisy. */}
           <marker id="graph-arrow-accent" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M0,0L8,4L0,8z" fill="var(--accent, #56d364)" />
           </marker>
