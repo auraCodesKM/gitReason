@@ -90,3 +90,41 @@
   .docs-item { flex-wrap: wrap; }
   .docs-item-info { flex-basis: calc(100% - 30px); }
 }
+
+/* Inline viewer for one document. */
+.docs-preview {
+  margin-top: 20px;
+  border-top: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+  padding-top: 16px;
+}
+.docs-preview-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.docs-preview-head code { font-family: var(--mono-code, ui-monospace, monospace); font-size: 11.5px; }
+
+.docs-preview-body {
+  max-height: 520px;
+  overflow: auto;
+  margin: 0;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1));
+  background: var(--panel-bg-raised, #111111);
+}
+.docs-preview-text {
+  font-family: var(--mono-code, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #d8d8d8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* Markdown extras not covered by .analyze-explanation */
+.docs-preview-body table { width: 100%; border-collapse: collapse; margin: 0 0 12px; font-size: 12.5px; }
+.docs-preview-body th,
+.docs-preview-body td { border: 1px solid var(--panel-border, rgba(255, 255, 255, 0.1)); padding: 6px 8px; text-align: left; vertical-align: top; }
+.docs-preview-body th { color: #f2f2f2; font-weight: 600; }
+.docs-preview-body pre { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; overflow-x: auto; background: #0a0a0a; }
+.docs-preview-body pre code { padding: 0; background: none; color: #d8d8d8; }
+.docs-preview-body blockquote { margin: 0 0 12px; padding-left: 12px; border-left: 3px solid var(--accent, #56d364); color: #a8a8a8; }
+
+.docs-preview-pdf { width: 100%; height: 560px; border: 0; border-radius: 10px; background: #fff; }
+.docs-preview-image { display: block; max-width: 100%; max-height: 560px; margin: 0 auto; border-radius: 10px; }

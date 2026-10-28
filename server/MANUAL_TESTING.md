@@ -65,12 +65,14 @@ printf '# ADR-001: Keep CORS options as a plain object\n\nTest document for GitR
 2. **Choose file** → `gitreason-adr-test.md`. Its name and size appear before anything is sent.
 3. **Upload**: the button shows "Uploading…", then "Uploaded gitreason-adr-test.md." The row shows *Markdown · size · just now*.
 4. Reload the page and open **Knowledge** again: the file is still listed (it comes from MongoDB).
-5. **Download**: the same file is saved.
-6. Rejections:
+5. **View**: the document opens below the list. Markdown is rendered; text, images and PDFs are shown as they are. The header shows the **record id**, which is the document's `_id` in Atlas `uploads`. **Hide** or **Close** closes it.
+6. **Download**: the same file is saved.
+7. Rejections:
    - a `.exe` or `.zip` (switch the file picker to "All files") → "Only .pdf, .png, .jpg, .md and .txt files are allowed."
    - a file over 5 MB → refused before upload.
-7. **Delete** → confirm → the row disappears. Reload: still gone.
+8. **Delete** → confirm → the row disappears. Reload: still gone.
 
+- [ ] Terminal 1 printed `Upload saved: Multer received "gitreason-adr-test.md" (text/markdown, … B) -> uploads document <id> for analysis <id>`
 - [ ] After step 3, Atlas `uploads`: 0 → **1** with:
   - `owner` = your user `_id`
   - `analysis` = the `cached=` id in the page URL
@@ -79,7 +81,7 @@ printf '# ADR-001: Keep CORS options as a plain object\n\nTest document for GitR
   - `size` as shown
   - `storedName` like `<32 hex>.md`
 - [ ] A file named after that `storedName` exists in `server/uploads/`. Your filename is **not** used on disk.
-- [ ] After step 7, `uploads` back to **0** and the file is gone from `server/uploads/`.
+- [ ] After step 8, terminal 1 printed `Upload deleted: …`, and `uploads` is back to **0** and the file is gone from `server/uploads/`.
 - [ ] `users` and `analyses` counts unchanged throughout.
 
 ## 5. Inspect MongoDB Atlas safely

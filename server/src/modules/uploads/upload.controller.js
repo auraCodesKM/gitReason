@@ -11,6 +11,8 @@ export async function handleCreateUpload(req, res) {
     description,
     ...req.upload, // buffer, ext, mimeType, originalName - set by receiveDocument after validation
   });
+  // One line per upload so the terminal shows the Multer -> disk -> MongoDB path (no paths or secrets logged).
+  console.log(`Upload saved: Multer received "${upload.originalName}" (${upload.mimeType}, ${upload.size} B) -> uploads document ${upload.id} for analysis ${upload.analysisId}`);
   res.status(201).json({ upload });
 }
 
@@ -52,5 +54,6 @@ export async function handleDownloadUpload(req, res, next) {
 export async function handleDeleteUpload(req, res) {
   const deleted = await uploadService.deleteOwned(req.params.uploadId, req.auth.userId);
   if (!deleted) return res.status(404).json({ status: "not_found" });
+  console.log(`Upload deleted: uploads document ${req.params.uploadId} and its stored file removed`);
   res.status(204).end();
 }
