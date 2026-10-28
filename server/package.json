@@ -3,16 +3,22 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "main": "server.js",
+  "main": "src/server.js",
   "engines": {
-    "node": ">=22.5.0"
+    "node": ">=22.9.0"
   },
   "scripts": {
-    "start": "node --env-file-if-exists=.env server.js",
-    "dev": "node --watch --env-file-if-exists=.env server.js"
+    "start": "node --env-file-if-exists=.env --env-file-if-exists=../atlas-credentials.env src/server.js",
+    "dev": "node --watch --env-file-if-exists=.env --env-file-if-exists=../atlas-credentials.env src/server.js",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "test:atlas": "TEST_USE_MONGODB_URI=1 node --env-file-if-exists=.env --env-file-if-exists=../atlas-credentials.env --test --test-concurrency=1 \"test/**/*.test.js\""
   },
   "dependencies": {
-    "@libsql/client": "^0.14.0",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "mongoose": "^9.11.4",
+    "multer": "^2.5.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0"
   }
 }

@@ -1,6 +1,16 @@
+// HTTP client for GitHub (REST, GraphQL and the OAuth token endpoint).
+// Pure I/O: no database access, no Express. Used by the auth, users and analyses modules.
+// Functions return null (or { found: false }) for "not there"; they throw
+// Error("rate_limited") or a generic error for failures the caller must report.
+import { githubOAuth } from "../config/env.js";
+
 const GITHUB_API = "https://api.github.com";
 const REPO_PATH_RE = /^[\w.-]+\/[\w.-]+$/;
 
+/**
+ * Accepts "owner/repo" or a github.com URL and validates it.
+ * @returns {{ owner: string, repo: string, fullName: string } | null} null if invalid
+ */
 export function parseRepoPath(input) {
   if (!input || typeof input !== "string") return null;
 
@@ -14,6 +24,8 @@ export function parseRepoPath(input) {
   return { owner, repo, fullName: `${owner}/${repo}` };
 }
 
+// Signed-in requests use the user's token (and can see their private repos).
+// Anonymous requests use the OAuth App's id/secret for a higher rate limit.
 function authHeaders(token, extra = {}) {
   const headers = {
     Accept: "application/vnd.github+json",
@@ -21,13 +33,11 @@ function authHeaders(token, extra = {}) {
     ...extra,
   };
 
+  const { clientId, clientSecret } = githubOAuth();
   if (token) {
     headers.Authorization = `Bearer ${token}`;
-  } else if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-    const basic = Buffer.from(
-      `${process.env.GITHUB_CLIENT_ID}:${process.env.GITHUB_CLIENT_SECRET}`
-    ).toString("base64");
-    headers.Authorization = `Basic ${basic}`;
+  } else if (clientId && clientSecret) {
+    headers.Authorization = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`;
   }
 
   return headers;
@@ -66,11 +76,12 @@ export async function fetchTree(owner, repo, branch, token) {
     { headers: authHeaders(token) }
   );
 
-  if (res.status === 404) return { tree: [], truncated: false };
+  if (res.status === 404) return { tree: [], truncated: false, sha: null };
   if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
 
   const data = await res.json();
   return {
+    sha: data.sha || null,
     tree: (data.tree || [])
       .filter((e) => e.type === "blob" || e.type === "tree")
       .map((e) => ({ path: e.path, type: e.type === "tree" ? "dir" : "file", size: e.size || 0 })),
@@ -156,6 +167,12 @@ export async function fetchGitHubUser(token) {
   return { githubId: data.id, username: data.login, avatarUrl: data.avatar_url };
 }
 
+/**
+ * OAuth step 2: trade the one-time `code` GitHub sent to our callback for an
+ * access token. This happens server-to-server, so the client secret never
+ * reaches the browser.
+ * @returns {Promise<string|null>} the token, or null if GitHub refused
+ */
 export async function exchangeCodeForToken({ clientId, clientSecret, code, redirectUri }) {
   const res = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",

@@ -1,16 +1,29 @@
 node_modules/
 dist/
+coverage/
 .DS_Store
 *.log
+
+# editor state and local archives
+.vscode/
+.idea/
+*.swp
+*.tar
+*.tgz
 
 # secrets — never commit real env values, only .env.example
 .env
 .env.local
+*.env
+atlas-credentials.env
 
-# local SQLite data (sessions, analysis history)
+# legacy local SQLite data from before the MongoDB move
 server/data/
 *.db
 *.db-journal
 *.sqlite
 *.sqlite3
+
+# uploaded documents (bytes live here, metadata in MongoDB)
+server/uploads/
 client/.playwright-cli/

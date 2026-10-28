@@ -1,3 +1,5 @@
+// Drops files that say nothing about architecture (dependencies, build output,
+// lock files, binaries) from a repository tree before it is shown to the AI and saved.
 const NOISE_DIRS = new Set([
   "node_modules", ".git", "dist", "build", "out", ".next", ".nuxt",
   "vendor", "target", "coverage", ".venv", "venv", "__pycache__",
@@ -19,6 +21,7 @@ const BINARY_EXTENSIONS = new Set([
   ".class", ".jar", ".pyc",
 ]);
 
+/** @param {{ path: string }[]} tree @returns the entries worth keeping */
 export function filterTree(tree) {
   return tree.filter((entry) => {
     const parts = entry.path.split("/");
