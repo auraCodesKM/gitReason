@@ -6,6 +6,7 @@ import ArchitectureView from "../architecture/ArchitectureView";
 import CodebaseGraph from "../graph/CodebaseGraph";
 import { GraphErrorBoundary } from "../graph/GraphErrorBoundary";
 import { useFilePreview } from "../hooks/useFilePreview";
+import { AnalysisDocuments } from "../components/AnalysisDocuments";
 import { apiFetch, apiUrl } from "../lib/api";
 import "./analyze-page.css";
 
@@ -37,9 +38,12 @@ export default function AnalyzePage() {
   const [graph, setGraph] = useState(null);
   const [repo, setRepo] = useState("");
   const [defaultBranch, setDefaultBranch] = useState("main");
-  const [view, setView] = useState(
-    () => (new URLSearchParams(window.location.search).get("view") === "graph" ? "graph" : "architecture")
-  );
+  const [view, setView] = useState(() => {
+    const v = new URLSearchParams(window.location.search).get("view");
+    return v === "graph" || v === "documents" ? v : "architecture";
+  });
+  // Saved analysis this page shows (null for anonymous runs); documents attach to it.
+  const [analysisId, setAnalysisId] = useState(() => new URLSearchParams(window.location.search).get("cached"));
   const [graphFocusPath, setGraphFocusPath] = useState(null);
 
   const filePreview = useFilePreview(repo, defaultBranch);
@@ -62,6 +66,7 @@ export default function AnalyzePage() {
           setTree(data.analysis.fileTree);
           setExplanation(data.analysis.explanation || "");
           setGraph(data.analysis.graph);
+          if (data.analysis.defaultBranch) setDefaultBranch(data.analysis.defaultBranch);
           setPhase("done");
         })
         .catch(() => setErrorCode("error"));
@@ -86,6 +91,7 @@ export default function AnalyzePage() {
       setExplanation(data.explanation);
       setGraph(data.graph);
       setDefaultBranch(data.defaultBranch);
+      setAnalysisId(data.analysisId || null);
       setPhase("done");
       es.close();
     });
@@ -117,6 +123,11 @@ export default function AnalyzePage() {
             <button type="button" className={view === "graph" ? "is-active" : ""} onClick={() => setView("graph")}>
               Graph
             </button>
+            {analysisId && (
+              <button type="button" className={view === "documents" ? "is-active" : ""} onClick={() => setView("documents")}>
+                Knowledge
+              </button>
+            )}
           </nav>
         )}
 
@@ -162,6 +173,16 @@ export default function AnalyzePage() {
             setView("graph");
           }}
         />
+      )}
+
+      {ready && view === "documents" && (
+        analysisId ? (
+          <AnalysisDocuments analysisId={analysisId} />
+        ) : (
+          <div className="analyze-status">
+            <p>Sign in and save this analysis to attach documents to it.</p>
+          </div>
+        )
       )}
 
       {ready && view === "graph" && (

@@ -33,7 +33,7 @@ function CodebaseRow({ item }) {
       <div className="codebase-actions">
         <a href={baseHref} className="codebase-action">Architecture</a>
         <a href={`${baseHref}&view=graph`} className="codebase-action">Graph</a>
-        <span className="codebase-action codebase-action-disabled" title="Coming soon">Knowledge</span>
+        <a href={`${baseHref}&view=documents`} className="codebase-action">Knowledge</a>
         <a href={baseHref} className="codebase-action codebase-action-primary">Open →</a>
       </div>
     </div>

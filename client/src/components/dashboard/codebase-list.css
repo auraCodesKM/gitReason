@@ -88,9 +88,6 @@
 }
 .codebase-action:hover { color: #f2f2f2; background: rgba(255, 255, 255, 0.06); }
 
-.codebase-action-disabled { color: #55555a; cursor: default; }
-.codebase-action-disabled:hover { color: #55555a; background: none; }
-
 .codebase-action-primary { color: var(--accent, #56d364); font-weight: 500; }
 .codebase-action-primary:hover { color: var(--accent, #56d364); background: var(--accent-wash, rgba(86, 211, 100, 0.1)); }
 
