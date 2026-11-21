@@ -1,7 +1,24 @@
+<div align="center">
+
+<img src="client/public/favicon.svg" alt="GitReason logo" width="120">
+
 # GitReason
 
 **Maps any GitHub repository into an architecture explanation and an interactive dependency graph, with every node
 checked against the real file tree.**
+
+[![live: git-reason.vercel.app](https://img.shields.io/badge/live-git--reason.vercel.app-000000?logo=vercel&logoColor=white)](https://git-reason.vercel.app)
+[![tests: node --test](https://img.shields.io/badge/tests-node%20----test-339933?logo=nodedotjs&logoColor=white)](server/test)
+
+![Gemini: API](https://img.shields.io/badge/Gemini-API-8E75B2?logo=googlegemini&logoColor=white)
+![Node.js: 22](https://img.shields.io/badge/Node.js-22-339933?logo=nodedotjs&logoColor=white)
+![Express: 4](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)
+![MongoDB: Mongoose](https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb&logoColor=white)
+![React: 18](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
+![Vite: 8](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![D3: force graph](https://img.shields.io/badge/D3-force%20graph-F9A03C?logo=d3&logoColor=white)
+
+</div>
 
 GitReason reads a repository's file tree and README, asks Gemini for an architecture explanation and a graph, validates
 the graph against the actual file paths, and renders it as an explorable map with source previews. Live at
