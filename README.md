@@ -1,15 +1,16 @@
 # GitReason
 
-**Understand a codebase before you change it.**
+**Maps any GitHub repository into an architecture explanation and an interactive dependency graph, with every node
+checked against the real file tree.**
 
-GitReason reads a GitHub repository's real file tree and README, asks Gemini for an architecture explanation and a
-dependency graph, checks every graph node against the actual file paths, and renders the result as an interactive map
-with source previews. Live at [git-reason.vercel.app](https://git-reason.vercel.app).
+GitReason reads a repository's file tree and README, asks Gemini for an architecture explanation and a graph, validates
+the graph against the actual file paths, and renders it as an explorable map with source previews. Live at
+[git-reason.vercel.app](https://git-reason.vercel.app).
 
 ## The problem
 
-Opening an unfamiliar repository means hours of clicking through folders to build a mental model. LLM summaries help, but
-they invent files and relationships that aren't there, and a diagram you can't trust is worse than none.
+Opening an unfamiliar repository means hours of clicking through folders to build a mental model. LLM summaries help,
+but a diagram is only useful if every box in it points at something real.
 
 ## What it does
 
@@ -18,8 +19,8 @@ they invent files and relationships that aren't there, and a diagram you can't t
 - **Filters noise.** Drops dependency folders, build output, lockfiles and binaries before anything reaches the model.
 - **Explains the architecture.** A plain-English summary of how the repository is organised.
 - **Generates a graph and checks it.** Gemini returns the graph as JSON. Every node path is checked against the real
-  tree; if anything is invalid, the list of problems goes back to Gemini, up to 3 attempts. If all attempts fail, invalid
-  nodes and edges are dropped rather than shown.
+  tree; if anything is invalid, the list of problems goes back to Gemini for a corrected answer (up to 3 attempts), and
+  anything still invalid is pruned before rendering.
 - **Streams progress.** Each phase (access check, tree, README, explanation, graph, save) arrives over Server-Sent Events.
 - **Lets you explore.** Layered architecture view (Mermaid) and an interactive force graph (D3): search, pan/zoom, local
   graph, filtering, blast-radius exploration, and syntax-highlighted source for any node.
@@ -201,11 +202,14 @@ server/
 More: [`BACKEND_GUIDE.md`](server/BACKEND_GUIDE.md) · [`MANUAL_TESTING.md`](server/MANUAL_TESTING.md) ·
 [`EVALUATION_READINESS.md`](server/EVALUATION_READINESS.md) · [`VIVA_GUIDE.md`](server/VIVA_GUIDE.md)
 
-## Limitations and next steps
+## Design choices and roadmap
 
-- The model sees the file tree and README, not the source code, so relationships between files are inferred from names
-  and structure. Path validation removes invented files, not wrong edges between real ones.
-- There is no evaluation set yet measuring how accurate the generated graphs are.
-- Large repositories are refused (tree size limits), and uploads live on one server's disk.
-- Planned: retrieval-augmented Q&A over the code, git-history risk analysis, change-impact analysis, and agent-facing
-  context (MCP).
+- **Structure from the tree and README.** The model works from the filtered file tree and up to 4,000 characters of the
+  README, which keeps each analysis to an explanation call plus a graph call (up to three with corrections); node paths are
+  then validated against the real tree.
+- **Reuse by tree SHA.** An unchanged repository returns its saved analysis instantly, with no model call and no duplicate
+  storage, which also keeps the app inside the Atlas free tier.
+- **Bring your own key.** Signed-in users run analyses on their own Gemini key, encrypted at rest, so usage scales without
+  a shared quota.
+- **Roadmap:** retrieval-augmented Q&A over the code, git-history risk and change-impact analysis, a graph-accuracy
+  evaluation set, and agent-facing context through MCP.
